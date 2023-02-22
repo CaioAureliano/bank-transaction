@@ -27,3 +27,20 @@ API Restful que permite usuário se cadastrar e realizar transações bancárias
 
 - #### Banco de Dados
     O escopo bem definido e a simplicidade da API não necessitam de um banco de dados robusto, logo o `MySQL` atende bem as necessidades da aplicação.
+    
+## Fluxo
+
+- #### `/transaction`
+    - Usuário autenticado realiza transação
+    - Endpoint retorna que solicitação foi criada, junto com *status code* apropriado e *hateoas* para acompanhar o processo, através de *web socket*
+    - Solicitação é enviada para uma fila(`RabbitMQ`) e *status* é persistido no `Redis`
+    - Ao consumir evento da fila, atualiza *status* do processamento(que será consumido pelo *socket* em outro endpoint para acompanhamento).
+    - Processa solicitação
+        * Verifica se conta de usuário(*payee*) existe
+        * Verifica o tipo de conta do usuário(*payer*)
+        * Verifica saldo
+        * Consulta serviço autorizador(*mock*)
+        * Atualiza saldo de contas
+    - Atualiza *status* do processamento
+    - Em caso de erro, realizar *rollback* e atualizar *status*
+    - Todas as transações bem sucedida(ou não) são registradas
