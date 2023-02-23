@@ -1,19 +1,29 @@
 package user
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/CaioAureliano/bank-transaction/internal/shared/api"
+	"github.com/gofiber/fiber/v2"
+)
 
-type Handler interface {
-	CreateUser() fiber.Handler
-}
-
-type handler struct{}
+type Handler struct{}
 
 func NewHandler() Handler {
-	return handler{}
+	return Handler{}
 }
 
-func (h handler) CreateUser() fiber.Handler {
+func (h Handler) CreateUser() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		return c.SendString("created")
+
+		req := new(CreateRequestDTO)
+
+		if err := c.BodyParser(req); err != nil {
+			return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"message": err.Error()})
+		}
+
+		if errors := api.ValidateRequest(*req); errors != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(errors)
+		}
+
+		return c.SendStatus(201)
 	}
 }
