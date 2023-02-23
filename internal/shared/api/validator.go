@@ -3,10 +3,9 @@ package api
 import "github.com/go-playground/validator/v10"
 
 type ValidatorErrorResponse struct {
-	Field        string `json:"field"`
-	Tag          string `json:"tag"`
-	Value        string `json:"value"`
-	ErrorMessage string `json:"message"`
+	Field string `json:"field"`
+	Tag   string `json:"tag"`
+	Value string `json:"value"`
 }
 
 func ValidateRequest(req interface{}) []*ValidatorErrorResponse {
@@ -20,7 +19,6 @@ func ValidateRequest(req interface{}) []*ValidatorErrorResponse {
 			errorResponse.Field = validationError.Field()
 			errorResponse.Tag = validationError.Tag()
 			errorResponse.Value = validationError.Param()
-			errorResponse.ErrorMessage = validationError.Error()
 
 			errors = append(errors, &errorResponse)
 		}
