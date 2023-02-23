@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/CaioAureliano/bank-transaction/internal/modules/user"
+	user "github.com/CaioAureliano/bank-transaction/internal/modules/user/handler"
 	"github.com/gofiber/fiber/v2"
 )
 
