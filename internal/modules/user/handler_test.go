@@ -2,7 +2,6 @@ package user
 
 import (
 	"bytes"
-	"encoding/json"
 	"net/http/httptest"
 	"testing"
 
@@ -13,24 +12,65 @@ import (
 
 func TestCreateUser(t *testing.T) {
 
-	app := application.Setup()
-	Router(app)
+	tests := []struct {
+		name string
 
-	body := CreateRequestDTO{
-		Firstname: "User",
-		Lastname:  "Example",
-		Email:     "example@mail.com",
-		CPF:       "0",
-		Password:  "test1234",
-		Type:      "user",
+		body string
+
+		expectedStatusCode int
+	}{
+		{
+			name: "should be return 201 Created status code with valid body",
+
+			body: `{
+				"firstname": "Abc",
+				"lastname": "test",
+				"email": "example@mail.com",
+				"cpf": "0",
+				"password": "test1234",
+				"type": "user"
+			}`,
+
+			expectedStatusCode: fiber.StatusCreated,
+		},
+		{
+			name: "should be return 422 Unprocessable Entity status code with invalid structure body",
+
+			body: `{
+				"key": "value",
+			}`,
+
+			expectedStatusCode: fiber.StatusUnprocessableEntity,
+		},
+		{
+			name: "should be return 400 Unprocessable Entity status code with invalid value body",
+
+			body: `{
+				"firstname": "Abc",
+				"lastname": "test",
+				"email": "example@mail.com",
+				"cpf": "0",
+				"password": "test",
+				"type": "user"
+			}`,
+
+			expectedStatusCode: fiber.StatusBadRequest,
+		},
 	}
-	bodyJson, _ := json.Marshal(body)
 
-	req := httptest.NewRequest("POST", "/user", bytes.NewBuffer(bodyJson))
-	req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 
-	res, err := app.Test(req, -1)
+			app := application.Setup()
+			Router(app)
 
-	assert.NoError(t, err)
-	assert.Equal(t, fiber.StatusCreated, res.StatusCode)
+			req := httptest.NewRequest(fiber.MethodPost, USER_ENDPOINT, bytes.NewBuffer([]byte(tt.body)))
+			req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+
+			res, _ := app.Test(req, -1)
+
+			assert.Equal(t, tt.expectedStatusCode, res.StatusCode)
+		})
+	}
+
 }
