@@ -1,10 +1,11 @@
-package user
+package handler
 
 import (
 	"bytes"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/CaioAureliano/bank-transaction/internal/modules/user"
 	"github.com/CaioAureliano/bank-transaction/internal/shared/application"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
@@ -60,6 +61,10 @@ func TestCreateUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			service = func() user.Service {
+				return mockService{}
+			}
 
 			app := application.Setup()
 			Router(app)
