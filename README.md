@@ -27,6 +27,24 @@ API Restful que permite usuário se cadastrar e realizar transações bancárias
 
 - #### Banco de Dados
     O escopo bem definido e a simplicidade da API não necessitam de um banco de dados robusto, logo o `MySQL` atende bem as necessidades da aplicação.
+
+## Estrutura
+
+```
+├── cmd
+├── internal
+│   ├── config
+│   │   ├── router
+│   └── modules
+│       ├── account
+│       ├── user
+│           ├── domain
+│           ├── repository
+│           ├── service
+│           ├── handler
+├── pkg
+└── docs
+```
     
 ## Fluxo
 
