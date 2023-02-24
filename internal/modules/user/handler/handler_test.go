@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/CaioAureliano/bank-transaction/internal/modules/user"
-	"github.com/CaioAureliano/bank-transaction/internal/shared/application"
+	"github.com/CaioAureliano/bank-transaction/internal/modules/user/service"
+	"github.com/CaioAureliano/bank-transaction/pkg/api"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 )
@@ -62,11 +62,11 @@ func TestCreateUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			service = func() user.Service {
+			userService = func() service.Service {
 				return mockService{}
 			}
 
-			app := application.Setup()
+			app := api.Setup()
 			Router(app)
 
 			req := httptest.NewRequest(fiber.MethodPost, USER_ENDPOINT, bytes.NewBuffer([]byte(tt.body)))

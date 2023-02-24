@@ -1,16 +1,17 @@
 package handler
 
 import (
-	"github.com/CaioAureliano/bank-transaction/internal/modules/user"
-	"github.com/CaioAureliano/bank-transaction/internal/shared/api"
+	"github.com/CaioAureliano/bank-transaction/internal/modules/user/domain/dto"
+	"github.com/CaioAureliano/bank-transaction/internal/modules/user/service"
+	"github.com/CaioAureliano/bank-transaction/pkg/api"
 	"github.com/gofiber/fiber/v2"
 )
 
-var service = user.NewService
+var userService = service.NewService
 
 func CreateUser(c *fiber.Ctx) error {
 
-	req := new(user.CreateRequestDTO)
+	req := new(dto.CreateRequestDTO)
 
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"message": err.Error()})
@@ -20,7 +21,7 @@ func CreateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
-	if err := service().Create(*req); err != nil {
+	if err := userService().Create(*req); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 

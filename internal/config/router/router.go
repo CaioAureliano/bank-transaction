@@ -9,7 +9,7 @@ const (
 	DEFAULT_PATH = "/v1"
 )
 
-func Setup(app *fiber.App) {
+func Router(app *fiber.App) {
 	v1 := app.Group(DEFAULT_PATH)
 
 	user.Router(v1)
