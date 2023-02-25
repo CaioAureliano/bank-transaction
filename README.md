@@ -36,8 +36,9 @@ API Restful que permite usuário se cadastrar e realizar transações bancárias
 │   ├── config
 │   │   ├── router
 │   └── modules
+│       ├── transaction
+│       ├── transfer
 │       ├── account
-│       ├── user
 │           ├── domain
 │           ├── repository
 │           ├── service
