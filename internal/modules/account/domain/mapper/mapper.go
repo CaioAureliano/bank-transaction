@@ -7,7 +7,7 @@ import (
 
 func ToModel(d dto.CreateRequestDTO) *domain.Account {
 	return &domain.Account{
-		User: domain.User{
+		User: &domain.User{
 			Firstname: d.Firstname,
 			Lastname:  d.Lastname,
 			Email:     d.Email,

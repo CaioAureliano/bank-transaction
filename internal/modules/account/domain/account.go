@@ -2,7 +2,7 @@ package domain
 
 type Account struct {
 	ID uint
-	User
+	*User
 	Type
 	Balance float64
 }
