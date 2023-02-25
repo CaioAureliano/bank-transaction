@@ -6,5 +6,5 @@ type CreateRequestDTO struct {
 	Email     string `json:"email" validate:"required,email"`
 	CPF       string `json:"cpf" validate:"required"`
 	Password  string `json:"password" validate:"required,min=8"`
-	Type      string `json:"type" validate:"required"`
+	Type      int    `json:"type" validate:"required"`
 }
