@@ -1,18 +1,32 @@
 package service
 
-import "github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/dto"
+import (
+	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/dto"
+	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/mapper"
+)
 
-type Service interface {
-	Create(dto.CreateRequestDTO) error
+type Service struct {
+	r repository
+	v validator
 }
 
-type userService struct{}
-
-func NewService() Service {
-	return userService{}
+func New(r repository, v validator) Service {
+	return Service{r, v}
 }
 
-func (s userService) Create(userDTO dto.CreateRequestDTO) error {
+func (s Service) CreateUserAccount(req dto.CreateRequestDTO) error {
+
+	account := mapper.ToModel(req)
+
+	if err := s.v.Validate(&account.User); err != nil {
+		return err
+	}
+
+	account.User.GeneratePassword()
+
+	if err := s.r.Create(account); err != nil {
+		return err
+	}
 
 	return nil
 }
