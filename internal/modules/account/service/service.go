@@ -1,6 +1,8 @@
 package service
 
 import (
+	"log"
+
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/dto"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/mapper"
 )
@@ -18,13 +20,15 @@ func (s Service) CreateUserAccount(req dto.CreateRequestDTO) error {
 
 	account := mapper.ToModel(req)
 
-	if err := s.v.Validate(&account.User); err != nil {
+	if err := s.v.Validate(account.User); err != nil {
+		log.Printf("error to validate user - %s", err)
 		return err
 	}
 
 	account.User.GeneratePassword()
 
 	if err := s.r.Create(account); err != nil {
+		log.Printf("error to try create user - %s", err)
 		return err
 	}
 
