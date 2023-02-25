@@ -1,6 +1,6 @@
 package service
 
-import "github.com/CaioAureliano/bank-transaction/internal/modules/user/domain/dto"
+import "github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/dto"
 
 type Service interface {
 	Create(dto.CreateRequestDTO) error

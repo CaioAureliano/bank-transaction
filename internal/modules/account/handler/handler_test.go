@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/CaioAureliano/bank-transaction/internal/modules/user/service"
+	"github.com/CaioAureliano/bank-transaction/internal/modules/account/service"
 	"github.com/CaioAureliano/bank-transaction/pkg/api"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"

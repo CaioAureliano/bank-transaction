@@ -1,6 +1,6 @@
 package handler
 
-import "github.com/CaioAureliano/bank-transaction/internal/modules/user/domain/dto"
+import "github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/dto"
 
 type mockService struct {
 	fnCreate func(dto.CreateRequestDTO) error
