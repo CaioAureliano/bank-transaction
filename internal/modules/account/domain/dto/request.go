@@ -8,3 +8,8 @@ type CreateRequestDTO struct {
 	Password  string `json:"password" validate:"required,min=8"`
 	Type      int    `json:"type" validate:"required"`
 }
+
+type AuthRequestDTO struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}

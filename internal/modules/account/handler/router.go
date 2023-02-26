@@ -4,6 +4,7 @@ import "github.com/gofiber/fiber/v2"
 
 type handlers interface {
 	CreateUser(c *fiber.Ctx) error
+	Authenticate(c *fiber.Ctx) error
 }
 
 const (
@@ -12,4 +13,5 @@ const (
 
 func Router(group fiber.Router, h handlers) {
 	group.Post(USER_ENDPOINT, h.CreateUser)
+	group.Post(USER_ENDPOINT+"/auth", h.Authenticate)
 }

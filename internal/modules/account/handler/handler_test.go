@@ -12,7 +12,8 @@ import (
 )
 
 type mockService struct {
-	fnCreate func(dto.CreateRequestDTO) error
+	fnCreate       func(dto.CreateRequestDTO) error
+	fnAuthenticate func(dto.AuthRequestDTO) (string, error)
 }
 
 func (m mockService) Create(req dto.CreateRequestDTO) error {
@@ -20,6 +21,13 @@ func (m mockService) Create(req dto.CreateRequestDTO) error {
 		return nil
 	}
 	return m.fnCreate(req)
+}
+
+func (m mockService) Authenticate(req dto.AuthRequestDTO) (string, error) {
+	if m.fnAuthenticate == nil {
+		return "", nil
+	}
+	return m.fnAuthenticate(req)
 }
 
 func TestCreateUser(t *testing.T) {
@@ -93,4 +101,31 @@ func TestCreateUser(t *testing.T) {
 		})
 	}
 
+}
+
+func TestAuthenticate(t *testing.T) {
+
+	serviceMock := mockService{
+		fnAuthenticate: func(ard dto.AuthRequestDTO) (string, error) {
+			return "validtoken", nil
+		},
+	}
+
+	h := New(serviceMock)
+	app := api.Setup()
+
+	Router(app, h)
+
+	body := `{
+		"email": "example@mail.com",
+		"password": "test1234"
+	}`
+
+	req := httptest.NewRequest(fiber.MethodPost, USER_ENDPOINT+"/auth", bytes.NewBuffer([]byte(body)))
+	req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+
+	res, err := app.Test(req, -1)
+
+	assert.NoError(t, err)
+	assert.Equal(t, fiber.StatusOK, res.StatusCode)
 }
