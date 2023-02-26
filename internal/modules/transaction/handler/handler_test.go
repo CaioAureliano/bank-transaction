@@ -16,14 +16,14 @@ import (
 )
 
 type mockService struct {
-	fnCreateTransaction func(*dto.TransactionRequestDTO) (uint, error)
+	fnCreateTransaction func(*dto.TransactionRequestDTO, uint) (uint, error)
 }
 
-func (m mockService) CreateTransaction(req *dto.TransactionRequestDTO) (uint, error) {
+func (m mockService) CreateTransaction(req *dto.TransactionRequestDTO, userID uint) (uint, error) {
 	if m.fnCreateTransaction == nil {
 		return 0, nil
 	}
-	return m.fnCreateTransaction(req)
+	return m.fnCreateTransaction(req, userID)
 }
 
 func TestCreateTransaction(t *testing.T) {
@@ -42,7 +42,7 @@ func TestCreateTransaction(t *testing.T) {
 			name: "should be return accepted(202) status with valid JWT",
 
 			serviceMock: mockService{
-				fnCreateTransaction: func(trd *dto.TransactionRequestDTO) (uint, error) {
+				fnCreateTransaction: func(trd *dto.TransactionRequestDTO, userID uint) (uint, error) {
 					return 0, nil
 				},
 			},
@@ -62,7 +62,7 @@ func TestCreateTransaction(t *testing.T) {
 			name: "should be return unauthorized(401) status with invalid user type",
 
 			serviceMock: mockService{
-				fnCreateTransaction: func(trd *dto.TransactionRequestDTO) (uint, error) {
+				fnCreateTransaction: func(trd *dto.TransactionRequestDTO, userID uint) (uint, error) {
 					return 0, nil
 				},
 			},
@@ -82,7 +82,7 @@ func TestCreateTransaction(t *testing.T) {
 			name: "should be return unauthorized(401) status with invalid jwt expires",
 
 			serviceMock: mockService{
-				fnCreateTransaction: func(trd *dto.TransactionRequestDTO) (uint, error) {
+				fnCreateTransaction: func(trd *dto.TransactionRequestDTO, userID uint) (uint, error) {
 					return 0, nil
 				},
 			},

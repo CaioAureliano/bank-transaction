@@ -13,7 +13,7 @@ import (
 )
 
 type service interface {
-	CreateTransaction(*dto.TransactionRequestDTO) (uint, error)
+	CreateTransaction(req *dto.TransactionRequestDTO, userID uint) (uint, error)
 }
 
 type Handler struct {
@@ -29,6 +29,7 @@ func (h Handler) CreateTransaction(c *fiber.Ctx) error {
 	userToken := c.Locals("user").(*jwt.Token)
 	claims := userToken.Claims.(jwt.MapClaims)
 	typeAccount := claims["type"].(float64)
+	userID := claims["ID"].(float64)
 
 	req := new(dto.TransactionRequestDTO)
 
@@ -47,7 +48,7 @@ func (h Handler) CreateTransaction(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "user not have permission to do transaction"})
 	}
 
-	id, err := h.s.CreateTransaction(req)
+	id, err := h.s.CreateTransaction(req, uint(userID))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
