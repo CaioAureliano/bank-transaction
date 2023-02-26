@@ -7,7 +7,7 @@ import (
 )
 
 type repository interface {
-	Exists(*domain.User) bool
+	ExistsByCpfOrEmail(cpf, email string) bool
 }
 
 type Validator struct {
@@ -36,7 +36,7 @@ func (v Validator) Validate(u *domain.User) error {
 }
 
 func (v Validator) ExistsByCpfOrEmail(user *domain.User) bool {
-	return v.r.Exists(user)
+	return v.r.ExistsByCpfOrEmail(user.CPF, user.Email)
 }
 
 func (v Validator) isValidCPF(cpf string) bool {
