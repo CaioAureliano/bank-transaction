@@ -13,6 +13,7 @@ type User struct {
 	CPF       string
 	Email     string
 	Password  string
+	Account   *Account
 	CreatedAt time.Time
 }
 
