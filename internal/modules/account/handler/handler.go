@@ -61,7 +61,7 @@ func (h Handler) Authenticate(c *fiber.Ctx) error {
 
 	token, err := h.s.Authenticate(*req)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "not found user with this email and/or password"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"token": token})
