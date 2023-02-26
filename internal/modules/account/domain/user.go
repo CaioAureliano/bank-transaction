@@ -21,3 +21,10 @@ func (u *User) GeneratePassword() {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	u.Password = string(hash)
 }
+
+func (u *User) ValidatePassword(p string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(p)); err != nil {
+		return err
+	}
+	return nil
+}
