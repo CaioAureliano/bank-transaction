@@ -7,7 +7,9 @@ import (
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain/dto"
 	"github.com/CaioAureliano/bank-transaction/pkg/api"
+	"github.com/CaioAureliano/bank-transaction/pkg/model"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type service interface {
@@ -24,6 +26,10 @@ func New(s service) Handler {
 
 func (h Handler) CreateTransaction(c *fiber.Ctx) error {
 
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	typeAccount := claims["type"].(float64)
+
 	req := new(dto.TransactionRequestDTO)
 
 	if err := c.BodyParser(&req); err != nil {
@@ -35,6 +41,10 @@ func (h Handler) CreateTransaction(c *fiber.Ctx) error {
 		errorsJson, _ := json.Marshal(errors)
 		log.Printf("errors to try validate request body - %s", errorsJson)
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
+	}
+
+	if model.Type(typeAccount) != model.USER {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "user not have permission to do transaction"})
 	}
 
 	id, err := h.s.CreateTransaction(req)
