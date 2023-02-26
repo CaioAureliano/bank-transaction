@@ -6,7 +6,7 @@ import (
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/dto"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/mapper"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/CaioAureliano/bank-transaction/pkg/authentication"
 )
 
 type Service struct {
@@ -47,17 +47,9 @@ func (s Service) Authenticate(req dto.AuthRequestDTO) (string, error) {
 
 	user := mapper.ToModel(entity)
 	if err := user.ValidatePassword(req.Password); err != nil {
-		log.Printf("Invalid password - %s", err)
+		log.Printf("invalid password - %s", err)
 		return "", err
 	}
 
-	claims := jwt.MapClaims{
-		"ID":   user.ID,
-		"type": user.Account.Type,
-		"exp":  time.Now().Add(time.Hour * 12).Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	return token.SignedString([]byte("shhhhh"))
+	return authentication.GenerateJwt(user.ID, uint(user.Account.Type), time.Now().Add(time.Hour*12))
 }
