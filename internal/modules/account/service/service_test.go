@@ -6,12 +6,14 @@ import (
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/dto"
+	"github.com/CaioAureliano/bank-transaction/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type mockRepository struct {
-	fnCreate func(*domain.User) error
+	fnCreate     func(*domain.User) error
+	fnGetByEmail func(string) (*model.User, error)
 }
 
 func (m mockRepository) Create(user *domain.User) error {
@@ -19,6 +21,13 @@ func (m mockRepository) Create(user *domain.User) error {
 		return nil
 	}
 	return m.fnCreate(user)
+}
+
+func (m mockRepository) GetByEmail(email string) (*model.User, error) {
+	if m.fnGetByEmail == nil {
+		return nil, nil
+	}
+	return m.fnGetByEmail(email)
 }
 
 type mockValidator struct {
@@ -84,10 +93,12 @@ func TestCreateUserAccount(t *testing.T) {
 
 		var hashPasswordGenerated string
 		validatorMock := mockValidator{}
-		repositoryMock := mockRepository{func(u *domain.User) error {
-			hashPasswordGenerated = u.Password
-			return nil
-		}}
+		repositoryMock := mockRepository{
+			fnCreate: func(u *domain.User) error {
+				hashPasswordGenerated = u.Password
+				return nil
+			},
+		}
 		reqMock := dto.CreateRequestDTO{
 			Password: passwordMock,
 		}
@@ -152,5 +163,70 @@ func TestCreateUserAccount(t *testing.T) {
 				tt.expectedError(t, err)
 			})
 		}
+	})
+}
+
+func TestAuthenticate(t *testing.T) {
+
+	t.Run("should be return token with valid request", func(tt *testing.T) {
+		tt.Parallel()
+
+		passwordMock := "test1234"
+
+		repositoryMock := mockRepository{
+			fnGetByEmail: func(s string) (*model.User, error) {
+				hash, _ := bcrypt.GenerateFromPassword([]byte(passwordMock), bcrypt.MinCost)
+				return &model.User{
+					Password: string(hash),
+					Account:  &model.Account{},
+				}, nil
+			},
+		}
+		validatorMock := mockValidator{
+			fnValidate: func(u *domain.User) error {
+				return nil
+			},
+		}
+
+		reqMock := dto.AuthRequestDTO{
+			Email:    "",
+			Password: passwordMock,
+		}
+
+		s := New(repositoryMock, validatorMock)
+		token, err := s.Authenticate(reqMock)
+
+		assert.NoError(t, err)
+		assert.NotEmpty(t, token)
+	})
+
+	t.Run("should be return empty token and error with diff password", func(tt *testing.T) {
+		tt.Parallel()
+
+		repositoryMock := mockRepository{
+			fnGetByEmail: func(s string) (*model.User, error) {
+				hash, _ := bcrypt.GenerateFromPassword([]byte("pass0101"), bcrypt.MinCost)
+				return &model.User{
+					Password: string(hash),
+					Account:  &model.Account{},
+				}, nil
+			},
+		}
+		validatorMock := mockValidator{
+			fnValidate: func(u *domain.User) error {
+				return nil
+			},
+		}
+
+		reqMock := dto.AuthRequestDTO{
+			Email:    "",
+			Password: "test1234",
+		}
+
+		s := New(repositoryMock, validatorMock)
+		token, err := s.Authenticate(reqMock)
+
+		assert.Error(t, err)
+		assert.Empty(t, token)
 	})
 }
