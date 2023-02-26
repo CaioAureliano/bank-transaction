@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+	"regexp"
 	"testing"
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain"
@@ -10,11 +12,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreate(t *testing.T) {
-	conn, mock, err := sqlmock.New()
-	defer conn.Close()
+func before() (Repository, *sql.DB, sqlmock.Sqlmock) {
+	conn, mock, _ := sqlmock.New()
 	db := database.Connection(test.DialectorMock(conn))
 	r := New(db)
+	return r, conn, mock
+}
+
+func TestCreate(t *testing.T) {
+	r, conn, mock := before()
+	defer conn.Close()
 
 	user := &domain.User{
 		Firstname: "Ada",
@@ -35,7 +42,25 @@ func TestCreate(t *testing.T) {
 	mock.ExpectExec("INSERT INTO `accounts`").WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
-	err = r.Create(user)
+	err := r.Create(user)
 
 	assert.NoError(t, err)
+}
+
+func TestGetByEmail(t *testing.T) {
+	r, conn, mock := before()
+	defer conn.Close()
+
+	email := "example@mail.com"
+	rowsMock := sqlmock.NewRows([]string{"email"}).AddRow(email)
+
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE email = ? ORDER BY `users`.`id` LIMIT 1")).
+		WithArgs(email).
+		WillReturnRows(rowsMock)
+
+	user, err := r.GetByEmail(email)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, user)
+	assert.Equal(t, email, user.Email)
 }
