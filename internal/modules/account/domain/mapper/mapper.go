@@ -6,7 +6,7 @@ import (
 	"github.com/CaioAureliano/bank-transaction/pkg/model"
 )
 
-func ToModel(d dto.CreateRequestDTO) *domain.User {
+func RequestToModel(d dto.CreateRequestDTO) *domain.User {
 	return &domain.User{
 		Firstname: d.Firstname,
 		Lastname:  d.Lastname,
@@ -28,6 +28,23 @@ func ToEntity(m *domain.User) *model.User {
 		Password:  m.Password,
 		Account: &model.Account{
 			Type: model.Type(m.Account.Type),
+		},
+	}
+}
+
+func ToModel(entity *model.User) *domain.User {
+	return &domain.User{
+		ID:        entity.ID,
+		Firstname: entity.Firstname,
+		Lastname:  entity.Lastname,
+		CPF:       entity.CPF,
+		Email:     entity.Email,
+		Password:  entity.Password,
+		CreatedAt: entity.CreatedAt,
+		Account: &domain.Account{
+			ID:      entity.Account.ID,
+			Type:    domain.Type(entity.Account.Type),
+			Balance: entity.Account.Balance,
 		},
 	}
 }
