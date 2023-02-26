@@ -2,9 +2,11 @@ package service
 
 import (
 	"log"
+	"time"
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/dto"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/mapper"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type Service struct {
@@ -18,7 +20,7 @@ func New(r repository, v validator) Service {
 
 func (s Service) CreateUserAccount(req dto.CreateRequestDTO) error {
 
-	user := mapper.ToModel(req)
+	user := mapper.RequestToModel(req)
 
 	if err := s.v.Validate(user); err != nil {
 		log.Printf("error to validate user - %s", err)
@@ -33,4 +35,29 @@ func (s Service) CreateUserAccount(req dto.CreateRequestDTO) error {
 	}
 
 	return nil
+}
+
+func (s Service) Authenticate(req dto.AuthRequestDTO) (string, error) {
+
+	entity, err := s.r.GetByEmail(req.Email)
+	if err != nil {
+		log.Println(err.Error())
+		return "", err
+	}
+
+	user := mapper.ToModel(entity)
+	if err := user.ValidatePassword(req.Password); err != nil {
+		log.Printf("Invalid password - %s", err)
+		return "", err
+	}
+
+	claims := jwt.MapClaims{
+		"ID":   user.ID,
+		"type": user.Account.Type,
+		"exp":  time.Now().Add(time.Hour * 12).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	return token.SignedString([]byte("shhhhh"))
 }
