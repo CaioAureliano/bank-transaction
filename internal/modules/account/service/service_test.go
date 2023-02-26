@@ -11,14 +11,14 @@ import (
 )
 
 type mockRepository struct {
-	fnCreate func(*domain.Account) error
+	fnCreate func(*domain.User) error
 }
 
-func (m mockRepository) Create(a *domain.Account) error {
+func (m mockRepository) Create(user *domain.User) error {
 	if m.fnCreate == nil {
 		return nil
 	}
-	return m.fnCreate(a)
+	return m.fnCreate(user)
 }
 
 type mockValidator struct {
@@ -37,23 +37,21 @@ func TestCreateUserAccount(t *testing.T) {
 	t.Run("Should be mapped reques to domain model", func(t *testing.T) {
 		t.Parallel()
 
-		expectAccountMapped := &domain.Account{
-			User: &domain.User{
-				Firstname: "User",
-				Lastname:  "Test",
-				Email:     "example@mail.com",
-				CPF:       "000.000.000-00",
-				Password:  "test1234",
+		expectedUserAccountMapped := &domain.User{
+			Firstname: "User",
+			Lastname:  "Test",
+			Email:     "example@mail.com",
+			CPF:       "000.000.000-00",
+			Password:  "test1234",
+			Account: &domain.Account{
+				Type: domain.USER,
 			},
-			Type: domain.USER,
 		}
 
-		accountMapped := &domain.Account{
-			User: &domain.User{},
-		}
+		userMapped := &domain.User{}
 		validatorMock := mockValidator{
 			fnValidate: func(u *domain.User) error {
-				accountMapped.User = u
+				userMapped = u
 				return nil
 			},
 		}
@@ -65,18 +63,18 @@ func TestCreateUserAccount(t *testing.T) {
 			Email:     "example@mail.com",
 			CPF:       "000.000.000-00",
 			Password:  "test1234",
-			Type:      1,
+			Type:      0,
 		}
 
 		s := New(repositoryMock, validatorMock)
 		err := s.CreateUserAccount(reqMock)
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectAccountMapped.Firstname, accountMapped.Firstname)
-		assert.Equal(t, expectAccountMapped.Lastname, accountMapped.Lastname)
-		assert.Equal(t, expectAccountMapped.CPF, accountMapped.CPF)
-		assert.Equal(t, expectAccountMapped.Email, accountMapped.Email)
-		assert.Equal(t, expectAccountMapped.Type, accountMapped.Type)
+		assert.Equal(t, expectedUserAccountMapped.Firstname, userMapped.Firstname)
+		assert.Equal(t, expectedUserAccountMapped.Lastname, userMapped.Lastname)
+		assert.Equal(t, expectedUserAccountMapped.CPF, userMapped.CPF)
+		assert.Equal(t, expectedUserAccountMapped.Email, userMapped.Email)
+		assert.Equal(t, expectedUserAccountMapped.Account.Type, userMapped.Account.Type)
 	})
 
 	t.Run("Should be correct generate password", func(t *testing.T) {
@@ -86,8 +84,8 @@ func TestCreateUserAccount(t *testing.T) {
 
 		var hashPasswordGenerated string
 		validatorMock := mockValidator{}
-		repositoryMock := mockRepository{func(a *domain.Account) error {
-			hashPasswordGenerated = a.Password
+		repositoryMock := mockRepository{func(u *domain.User) error {
+			hashPasswordGenerated = u.Password
 			return nil
 		}}
 		reqMock := dto.CreateRequestDTO{
@@ -118,7 +116,7 @@ func TestCreateUserAccount(t *testing.T) {
 
 				validatorMock: mockValidator{},
 				repositoryMock: mockRepository{
-					fnCreate: func(a *domain.Account) error {
+					fnCreate: func(u *domain.User) error {
 						return nil
 					},
 				},
@@ -135,7 +133,7 @@ func TestCreateUserAccount(t *testing.T) {
 					},
 				},
 				repositoryMock: mockRepository{
-					fnCreate: func(a *domain.Account) error {
+					fnCreate: func(u *domain.User) error {
 						return nil
 					},
 				},

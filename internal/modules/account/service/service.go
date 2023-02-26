@@ -18,16 +18,16 @@ func New(r repository, v validator) Service {
 
 func (s Service) CreateUserAccount(req dto.CreateRequestDTO) error {
 
-	account := mapper.ToModel(req)
+	user := mapper.ToModel(req)
 
-	if err := s.v.Validate(account.User); err != nil {
+	if err := s.v.Validate(user); err != nil {
 		log.Printf("error to validate user - %s", err)
 		return err
 	}
 
-	account.User.GeneratePassword()
+	user.GeneratePassword()
 
-	if err := s.r.Create(account); err != nil {
+	if err := s.r.Create(user); err != nil {
 		log.Printf("error to try create user - %s", err)
 		return err
 	}

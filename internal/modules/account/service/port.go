@@ -3,7 +3,7 @@ package service
 import "github.com/CaioAureliano/bank-transaction/internal/modules/account/domain"
 
 type repository interface {
-	Create(*domain.Account) error
+	Create(*domain.User) error
 }
 
 type validator interface {
