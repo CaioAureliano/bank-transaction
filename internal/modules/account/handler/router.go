@@ -8,10 +8,10 @@ type handlers interface {
 }
 
 const (
-	USER_ENDPOINT = "/user"
+	accountEndpoint = "/accounts"
 )
 
 func Router(group fiber.Router, h handlers) {
-	group.Post(USER_ENDPOINT, h.CreateUser)
-	group.Post(USER_ENDPOINT+"/auth", h.Authenticate)
+	group.Post(accountEndpoint, h.CreateUser)
+	group.Post(accountEndpoint+"/auth", h.Authenticate)
 }

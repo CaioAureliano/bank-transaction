@@ -92,7 +92,7 @@ func TestCreateUser(t *testing.T) {
 
 			Router(app, h)
 
-			req := httptest.NewRequest(fiber.MethodPost, USER_ENDPOINT, bytes.NewBuffer([]byte(tt.body)))
+			req := httptest.NewRequest(fiber.MethodPost, accountEndpoint, bytes.NewBuffer([]byte(tt.body)))
 			req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
 
 			res, _ := app.Test(req, -1)
@@ -121,7 +121,7 @@ func TestAuthenticate(t *testing.T) {
 		"password": "test1234"
 	}`
 
-	req := httptest.NewRequest(fiber.MethodPost, USER_ENDPOINT+"/auth", bytes.NewBuffer([]byte(body)))
+	req := httptest.NewRequest(fiber.MethodPost, accountEndpoint+"/auth", bytes.NewBuffer([]byte(body)))
 	req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
 
 	res, err := app.Test(req, -1)
