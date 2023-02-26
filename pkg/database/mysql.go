@@ -16,8 +16,8 @@ var (
 	DB_PASSWORD = os.Getenv("DB_PASSWORD")
 )
 
-func mysqlDialector() gorm.Dialector {
-	dsn := fmt.Sprintf("%s:%s@/%s", DB_USER, DB_NAME, DB_PASSWORD)
+func DefaultDialector() gorm.Dialector {
+	dsn := fmt.Sprintf("%s:%s@/%s", DB_USER, DB_PASSWORD, DB_NAME)
 	conn, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Panic(err)
