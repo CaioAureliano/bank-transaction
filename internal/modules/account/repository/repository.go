@@ -32,3 +32,7 @@ func (r Repository) GetByEmail(email string) (*model.User, error) {
 
 	return &user, nil
 }
+
+func (r Repository) ExistsByCpfOrEmail(cpf, email string) bool {
+	return false
+}
