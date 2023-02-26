@@ -10,7 +10,7 @@ import (
 )
 
 type service interface {
-	Create(dto.CreateRequestDTO) error
+	CreateUserAccount(dto.CreateRequestDTO) error
 	Authenticate(dto.AuthRequestDTO) (string, error)
 }
 
@@ -37,7 +37,7 @@ func (h Handler) CreateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
-	if err := h.s.Create(*req); err != nil {
+	if err := h.s.CreateUserAccount(*req); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 

@@ -12,15 +12,15 @@ import (
 )
 
 type mockService struct {
-	fnCreate       func(dto.CreateRequestDTO) error
-	fnAuthenticate func(dto.AuthRequestDTO) (string, error)
+	fnCreateUserAccount func(dto.CreateRequestDTO) error
+	fnAuthenticate      func(dto.AuthRequestDTO) (string, error)
 }
 
-func (m mockService) Create(req dto.CreateRequestDTO) error {
-	if m.fnCreate == nil {
+func (m mockService) CreateUserAccount(req dto.CreateRequestDTO) error {
+	if m.fnCreateUserAccount == nil {
 		return nil
 	}
-	return m.fnCreate(req)
+	return m.fnCreateUserAccount(req)
 }
 
 func (m mockService) Authenticate(req dto.AuthRequestDTO) (string, error) {
@@ -82,7 +82,7 @@ func TestCreateUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			serviceMock := mockService{
-				fnCreate: func(crd dto.CreateRequestDTO) error {
+				fnCreateUserAccount: func(crd dto.CreateRequestDTO) error {
 					return nil
 				},
 			}
