@@ -5,11 +5,22 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/CaioAureliano/bank-transaction/internal/modules/account/service"
+	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/dto"
 	"github.com/CaioAureliano/bank-transaction/pkg/api"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 )
+
+type mockService struct {
+	fnCreate func(dto.CreateRequestDTO) error
+}
+
+func (m mockService) Create(req dto.CreateRequestDTO) error {
+	if m.fnCreate == nil {
+		return nil
+	}
+	return m.fnCreate(req)
+}
 
 func TestCreateUser(t *testing.T) {
 
@@ -29,7 +40,7 @@ func TestCreateUser(t *testing.T) {
 				"email": "example@mail.com",
 				"cpf": "0",
 				"password": "test1234",
-				"type": "user"
+				"type": 1
 			}`,
 
 			expectedStatusCode: fiber.StatusCreated,
@@ -52,7 +63,7 @@ func TestCreateUser(t *testing.T) {
 				"email": "example@mail.com",
 				"cpf": "0",
 				"password": "test",
-				"type": "user"
+				"type": 1
 			}`,
 
 			expectedStatusCode: fiber.StatusBadRequest,
@@ -62,12 +73,16 @@ func TestCreateUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			userService = func() service.Service {
-				return mockService{}
+			serviceMock := mockService{
+				fnCreate: func(crd dto.CreateRequestDTO) error {
+					return nil
+				},
 			}
 
+			h := New(serviceMock)
 			app := api.Setup()
-			Router(app)
+
+			Router(app, h)
 
 			req := httptest.NewRequest(fiber.MethodPost, USER_ENDPOINT, bytes.NewBuffer([]byte(tt.body)))
 			req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
