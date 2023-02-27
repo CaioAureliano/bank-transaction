@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Setup(app *fiber.App, group fiber.Router, db *gorm.DB) {
+func Setup(group fiber.Router, db *gorm.DB) {
 
 	r := repository.New(db)
 
