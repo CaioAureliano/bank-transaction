@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"encoding/json"
+
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain/mapper"
 	"gorm.io/gorm"
@@ -10,7 +12,9 @@ type Database interface {
 	Create(interface{}) *gorm.DB
 }
 
-type Broker interface{}
+type Broker interface {
+	Pub(string) error
+}
 
 type Repository struct {
 	db Database
@@ -35,6 +39,7 @@ func (r Repository) ExistsByUserIDAndStatus(userID uint, status []domain.Status)
 	return false
 }
 
-func (r Repository) PubMessage(*domain.PubMessage) error {
-	return nil
+func (r Repository) PubMessage(message *domain.PubMessage) error {
+	body, _ := json.Marshal(message)
+	return r.b.Pub(string(body))
 }
