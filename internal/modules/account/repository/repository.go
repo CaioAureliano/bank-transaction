@@ -1,6 +1,9 @@
 package repository
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain/mapper"
 	"github.com/CaioAureliano/bank-transaction/pkg/model"
@@ -10,6 +13,7 @@ import (
 type Database interface {
 	Create(interface{}) *gorm.DB
 	First(dest interface{}, conds ...interface{}) *gorm.DB
+	Joins(query string, args ...interface{}) *gorm.DB
 }
 
 type Repository struct {
@@ -25,14 +29,15 @@ func (r Repository) Create(u *domain.User) error {
 }
 
 func (r Repository) GetByEmail(email string) (*model.User, error) {
-	var user model.User
-	if result := r.db.First(&user, "email = ?", email); result.Error != nil {
-		return nil, result.Error
+	user := new(model.User)
+	if result := r.db.Joins("Account").First(&user, "email = ?", email); result.Error != nil || user == nil {
+		return nil, errors.New(fmt.Sprintf("not found user by email[%s]: %s", email, result.Error.Error()))
 	}
-
-	return &user, nil
+	return user, nil
 }
 
 func (r Repository) ExistsByCpfOrEmail(cpf, email string) bool {
-	return false
+	user := new(model.User)
+	result := r.db.First(&user, "cpf = ? OR email = ?", cpf, email)
+	return result.Error == nil && user != nil
 }
