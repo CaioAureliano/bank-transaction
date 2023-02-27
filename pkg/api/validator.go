@@ -1,6 +1,10 @@
 package api
 
-import "github.com/go-playground/validator/v10"
+import (
+	"encoding/json"
+
+	"github.com/go-playground/validator/v10"
+)
 
 type ValidatorErrorResponse struct {
 	Field string `json:"field"`
@@ -8,7 +12,14 @@ type ValidatorErrorResponse struct {
 	Value string `json:"value"`
 }
 
-func ValidateRequest(req interface{}) []*ValidatorErrorResponse {
+type ValidatorErrorsResponse []*ValidatorErrorResponse
+
+func (v *ValidatorErrorsResponse) String() string {
+	s, _ := json.Marshal(v)
+	return string(s)
+}
+
+func ValidateRequest(req interface{}) ValidatorErrorsResponse {
 	var errors []*ValidatorErrorResponse
 
 	var validate = validator.New()
