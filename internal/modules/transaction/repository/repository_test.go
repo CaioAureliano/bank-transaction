@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain"
@@ -24,7 +25,9 @@ func TestCreateTransaction(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec("INSERT INTO `transactions`").WillReturnResult(sqlmock.NewResult(100, 1))
+	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO `transactions` (`payer_id`,`payee_id`,`value`,`status`,`created_at`) VALUES (?,?,?,?,?)")).
+		WithArgs(transactionToPersist.PayerID, transactionToPersist.PayeeID, transactionToPersist.Value, transactionToPersist.Status, test.AnyTime{}).
+		WillReturnResult(sqlmock.NewResult(100, 1))
 	mock.ExpectCommit()
 
 	transactionID, err := r.CreateTransaction(transactionToPersist)
