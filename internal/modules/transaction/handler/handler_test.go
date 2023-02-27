@@ -47,7 +47,7 @@ func TestCreateTransaction(t *testing.T) {
 				},
 			},
 			jwtMock: func() string {
-				t, _ := authentication.GenerateJwt(1, 0, time.Now().Add(time.Minute*1))
+				t, _ := authentication.GenerateJwt(1, 1, time.Now().Add(time.Minute*1))
 				return t
 			}(),
 			body: `{
@@ -67,7 +67,7 @@ func TestCreateTransaction(t *testing.T) {
 				},
 			},
 			jwtMock: func() string {
-				t, _ := authentication.GenerateJwt(1, 1, time.Now().Add(time.Minute*10))
+				t, _ := authentication.GenerateJwt(1, 2, time.Now().Add(time.Minute*10))
 				return t
 			}(),
 			body: `{
@@ -87,7 +87,7 @@ func TestCreateTransaction(t *testing.T) {
 				},
 			},
 			jwtMock: func() string {
-				t, _ := authentication.GenerateJwt(1, 1, time.Now().Add(time.Minute-10))
+				t, _ := authentication.GenerateJwt(1, 2, time.Now().Add(time.Minute-10))
 				return t
 			}(),
 			body: `{
