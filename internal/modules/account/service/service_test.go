@@ -72,7 +72,7 @@ func TestCreateUserAccount(t *testing.T) {
 			Email:     "example@mail.com",
 			CPF:       "000.000.000-00",
 			Password:  "test1234",
-			Type:      0,
+			Type:      1,
 		}
 
 		s := New(repositoryMock, validatorMock)
