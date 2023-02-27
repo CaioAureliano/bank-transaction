@@ -54,7 +54,7 @@ func TestGetByEmail(t *testing.T) {
 	email := "example@mail.com"
 	rowsMock := sqlmock.NewRows([]string{"email"}).AddRow(email)
 
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE email = ? ORDER BY `users`.`id` LIMIT 1")).
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT `users`.`id`,`users`.`firstname`,`users`.`lastname`,`users`.`cpf`,`users`.`email`,`users`.`password`,`users`.`created_at`,`Account`.`id` AS `Account__id`,`Account`.`user_id` AS `Account__user_id`,`Account`.`type` AS `Account__type`,`Account`.`balance` AS `Account__balance` FROM `users` LEFT JOIN `accounts` `Account` ON `users`.`id` = `Account`.`user_id` WHERE email = ? ORDER BY `users`.`id` LIMIT 1")).
 		WithArgs(email).
 		WillReturnRows(rowsMock)
 
