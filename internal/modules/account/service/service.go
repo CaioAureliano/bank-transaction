@@ -23,14 +23,13 @@ func (s Service) CreateUserAccount(req dto.CreateRequestDTO) error {
 	user := mapper.RequestToModel(req)
 
 	if err := s.v.Validate(user); err != nil {
-		log.Printf("error to validate user - %s", err)
 		return err
 	}
 
 	user.GeneratePassword()
 
+	user.Account.Balance = 100 // bonus
 	if err := s.r.Create(user); err != nil {
-		log.Printf("error to try create user - %s", err)
 		return err
 	}
 
@@ -47,9 +46,8 @@ func (s Service) Authenticate(req dto.AuthRequestDTO) (string, error) {
 
 	user := mapper.ToModel(entity)
 	if err := user.ValidatePassword(req.Password); err != nil {
-		log.Printf("invalid password - %s", err)
 		return "", err
 	}
 
-	return authentication.GenerateJwt(user.ID, uint(user.Account.Type), time.Now().Add(time.Hour*12))
+	return authentication.GenerateJwt(user.ID, uint(user.Account.Type), time.Now().Add(time.Hour*1))
 }
