@@ -32,12 +32,12 @@ func (h Handler) CreateUser(c *fiber.Ctx) error {
 	}
 
 	if errors := api.ValidateRequest(*req); errors != nil {
-		errorsJson, _ := json.Marshal(errors)
-		log.Printf("errors to try validate request body - %s", errorsJson)
+		log.Printf("errors to try validate request body - %s", errors.String())
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
 	if err := h.s.CreateUserAccount(*req); err != nil {
+		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
@@ -61,6 +61,7 @@ func (h Handler) Authenticate(c *fiber.Ctx) error {
 
 	token, err := h.s.Authenticate(*req)
 	if err != nil {
+		log.Println(err.Error())
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": err.Error()})
 	}
 
