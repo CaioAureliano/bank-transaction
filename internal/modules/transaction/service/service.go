@@ -41,9 +41,10 @@ func (s Service) CreateTransaction(req *dto.TransactionRequestDTO, userID uint) 
 	}
 
 	message := &domain.PubMessage{
-		Payer: userID,
-		Payee: req.Payee,
-		Value: req.Value,
+		Payer:         userID,
+		Payee:         req.Payee,
+		Value:         req.Value,
+		TransactionID: transactionID,
 	}
 
 	if err := s.r.PubMessage(message); err != nil {

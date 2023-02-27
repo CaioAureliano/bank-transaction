@@ -26,7 +26,9 @@ func New(db Database, b Broker) Repository {
 }
 
 func (r Repository) CreateTransaction(t *domain.Transaction) (uint, error) {
+
 	entity := mapper.ToEntity(t)
+
 	result := r.db.Create(&entity)
 	if result.Error != nil {
 		return 0, result.Error
