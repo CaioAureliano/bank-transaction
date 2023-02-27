@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain/dto"
 )
@@ -8,6 +10,7 @@ import (
 type repository interface {
 	PubMessage(*domain.PubMessage) error
 	CreateTransaction(t *domain.Transaction) (uint, error)
+	ExistsByUserIDAndStatus(userID uint, status []domain.Status) bool
 }
 
 type Service struct {
@@ -19,6 +22,11 @@ func New(r repository) Service {
 }
 
 func (s Service) CreateTransaction(req *dto.TransactionRequestDTO, userID uint) (uint, error) {
+
+	transactionCreatedStatus := []domain.Status{domain.REQUESTED, domain.PROCESSING}
+	if s.r.ExistsByUserIDAndStatus(userID, transactionCreatedStatus) {
+		return 0, errors.New("only a transaction is allowed by user")
+	}
 
 	transactionRequested := &domain.Transaction{
 		PayerID: userID,

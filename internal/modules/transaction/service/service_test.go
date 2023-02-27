@@ -9,8 +9,9 @@ import (
 )
 
 type mockRepository struct {
-	fnPubMessage        func(*domain.PubMessage) error
-	fnCreateTransaction func(*domain.Transaction) (uint, error)
+	fnPubMessage              func(*domain.PubMessage) error
+	fnCreateTransaction       func(*domain.Transaction) (uint, error)
+	fnExistsByUserIDAndStatus func(userID uint, status []domain.Status) bool
 }
 
 func (m mockRepository) PubMessage(message *domain.PubMessage) error {
@@ -25,6 +26,13 @@ func (m mockRepository) CreateTransaction(t *domain.Transaction) (uint, error) {
 		return 0, nil
 	}
 	return m.fnCreateTransaction(t)
+}
+
+func (m mockRepository) ExistsByUserIDAndStatus(userID uint, status []domain.Status) bool {
+	if m.fnExistsByUserIDAndStatus == nil {
+		return false
+	}
+	return m.fnExistsByUserIDAndStatus(userID, status)
 }
 
 func TestCreateTransaction(t *testing.T) {
