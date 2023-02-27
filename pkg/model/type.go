@@ -3,6 +3,6 @@ package model
 type Type int
 
 const (
-	USER Type = iota
+	USER Type = iota + 1
 	SELLER
 )
