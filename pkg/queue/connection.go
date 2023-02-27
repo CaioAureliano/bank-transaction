@@ -14,3 +14,11 @@ func Connection() *rabbitmq.Connection {
 
 	return conn
 }
+
+func Close(connection *rabbitmq.Connection) {
+	r := recover()
+	if r != nil && connection != nil {
+		log.Println("closing rabbitmq connection", r)
+	}
+	connection.Close()
+}
