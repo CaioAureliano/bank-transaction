@@ -11,7 +11,10 @@ func Migrate() {
 
 	log.Println("attempting to migrate tables")
 
-	db := database.Connection(database.DefaultDialector())
+	dialector, connection := database.DefaultDialector()
+	defer connection.Close()
+
+	db := database.Connection(dialector)
 
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Account{})
