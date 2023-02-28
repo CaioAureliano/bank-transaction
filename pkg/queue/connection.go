@@ -3,15 +3,15 @@ package queue
 import (
 	"log"
 
+	"github.com/CaioAureliano/bank-transaction/pkg/configuration"
 	rabbitmq "github.com/rabbitmq/amqp091-go"
 )
 
 func Connection() *rabbitmq.Connection {
-	conn, err := rabbitmq.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := rabbitmq.Dial(configuration.Env.QUEUEURI)
 	if err != nil {
 		log.Panic(err)
 	}
-
 	return conn
 }
 

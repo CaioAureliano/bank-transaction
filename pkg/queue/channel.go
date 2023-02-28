@@ -2,13 +2,9 @@ package queue
 
 import (
 	"log"
-	"os"
 
+	"github.com/CaioAureliano/bank-transaction/pkg/configuration"
 	rabbitmq "github.com/rabbitmq/amqp091-go"
-)
-
-var (
-	RABBITMQ_QUEUE_NAME = os.Getenv("RABBITMQ_QUEUE_NAME")
 )
 
 func Channel() (*rabbitmq.Connection, *rabbitmq.Channel) {
@@ -20,7 +16,7 @@ func Channel() (*rabbitmq.Connection, *rabbitmq.Channel) {
 		log.Panic(err)
 	}
 
-	_, err = ch.QueueDeclare("transactions", false, false, false, false, nil)
+	_, err = ch.QueueDeclare(configuration.Env.QUEUENAME, false, false, false, false, nil)
 	if err != nil {
 		log.Panic(err)
 	}
