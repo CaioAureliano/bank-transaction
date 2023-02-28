@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/CaioAureliano/bank-transaction/pkg/configuration"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -21,5 +22,5 @@ func GenerateJwt(id, t uint, expiresAt time.Time) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString([]byte(JWT_SECRET))
+	return token.SignedString([]byte(configuration.Env.JWTSECRET))
 }
