@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/CaioAureliano/bank-transaction/pkg/configuration"
 	rabbitmq "github.com/rabbitmq/amqp091-go"
 )
 
@@ -23,7 +24,7 @@ func (b Queue) SendMessage(payload string) error {
 
 	return channel.PublishWithContext(ctx,
 		"",
-		"transactions",
+		configuration.Env.QUEUENAME,
 		false,
 		false,
 		rabbitmq.Publishing{
