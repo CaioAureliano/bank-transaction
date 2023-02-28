@@ -4,24 +4,18 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 
+	"github.com/CaioAureliano/bank-transaction/pkg/configuration"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-var (
-	DB_USER     = os.Getenv("DB_USER")
-	DB_NAME     = os.Getenv("DB_NAME")
-	DB_PASSWORD = os.Getenv("DB_PASSWORD")
-)
-
-func DefaultDialector() gorm.Dialector {
-	dsn := fmt.Sprintf("%s:%s@/%s", DB_USER, DB_PASSWORD, DB_NAME)
+func DefaultDialector() (gorm.Dialector, *sql.DB) {
+	dsn := fmt.Sprintf("%s:%s@/%s?parseTime=true", configuration.Env.DBUSER, configuration.Env.DBPASSWORD, configuration.Env.DBNAME)
 	conn, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	return mysql.New(mysql.Config{Conn: conn})
+	return mysql.New(mysql.Config{Conn: conn}), conn
 }
