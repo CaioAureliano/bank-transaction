@@ -25,7 +25,7 @@ func (s Service) CreateTransaction(req *dto.TransactionRequestDTO, userID uint) 
 
 	transactionCreatedStatus := []domain.Status{domain.REQUESTED, domain.PROCESSING}
 	if s.r.ExistsByUserIDAndStatus(userID, transactionCreatedStatus) {
-		return 0, errors.New("only a transaction is allowed by user")
+		return 0, errors.New("transaction in process: only one transaction by user")
 	}
 
 	transactionRequested := &domain.Transaction{
