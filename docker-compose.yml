@@ -21,4 +21,11 @@ services:
       - 15672:15672
     volumes:
       - /docker_conf/rabbitmq/data/:/var/lib/rabbitmq/
+
+  cache:
+    image: redis:6.2-alpine
+    container_name: redis-bank-transaction
+    restart: always
+    ports:
+      - 6379:6379
       
