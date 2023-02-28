@@ -8,5 +8,7 @@ type Transaction struct {
 	PayeeID uint
 	Value   float64
 	Status
+	Message   string
 	CreatedAt time.Time
+	UpdatedAt time.Time
 }
