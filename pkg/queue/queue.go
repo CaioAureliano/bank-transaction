@@ -8,22 +8,20 @@ import (
 )
 
 type Queue struct {
-	conn *rabbitmq.Connection
-	ch   *rabbitmq.Channel
 }
 
 func New() Queue {
-	conn, ch := Channel()
-	return Queue{conn, ch}
+	return Queue{}
 }
 
 func (b Queue) SendMessage(payload string) error {
-	defer Close(b.conn)
+	conn, channel := Channel()
+	defer Close(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	return b.ch.PublishWithContext(ctx,
+	return channel.PublishWithContext(ctx,
 		"",
 		"transactions",
 		false,
