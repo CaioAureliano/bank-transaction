@@ -17,7 +17,7 @@ func New() Queue {
 	return Queue{conn, ch}
 }
 
-func (b Queue) Pub(payload string) error {
+func (b Queue) SendMessage(payload string) error {
 	defer Close(b.conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

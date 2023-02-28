@@ -12,16 +12,16 @@ type Database interface {
 	Create(interface{}) *gorm.DB
 }
 
-type Broker interface {
-	Pub(string) error
+type Queue interface {
+	SendMessage(string) error
 }
 
 type Repository struct {
 	db Database
-	b  Broker
+	q  Queue
 }
 
-func New(db Database, b Broker) Repository {
+func New(db Database, b Queue) Repository {
 	return Repository{db, b}
 }
 
@@ -43,5 +43,5 @@ func (r Repository) ExistsByUserIDAndStatus(userID uint, status []domain.Status)
 
 func (r Repository) PubMessage(message *domain.PubMessage) error {
 	body, _ := json.Marshal(message)
-	return r.b.Pub(string(body))
+	return r.q.SendMessage(string(body))
 }
