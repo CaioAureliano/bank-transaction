@@ -8,6 +8,7 @@ import (
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain"
 	"github.com/CaioAureliano/bank-transaction/pkg/database"
+	"github.com/CaioAureliano/bank-transaction/pkg/model"
 	"github.com/CaioAureliano/bank-transaction/pkg/utils/test"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/redis/go-redis/v9"
@@ -55,4 +56,29 @@ func TestCreateTransaction(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, uint(100), transactionID)
+}
+
+func TestGetTransactionByIDAndPayerID(t *testing.T) {
+	conn, mock, _ := sqlmock.New()
+	db := database.Connection(test.DialectorMock(conn))
+	r := New(db, nil, nil)
+
+	expectedTransaction := &model.Transaction{
+		ID:      20,
+		PayerID: 10,
+		Status:  model.SUCCESS,
+	}
+
+	columns := []string{"id", "payer_id", "status"}
+	rows := sqlmock.NewRows(columns).AddRow(expectedTransaction.ID, expectedTransaction.PayerID, expectedTransaction.Status)
+
+	mock.ExpectQuery("SELECT (.+) FROM `transactions` (.+)").
+		WithArgs(expectedTransaction.ID, expectedTransaction.PayerID).
+		WillReturnRows(rows)
+
+	persisted, err := r.GetTransactionByIDAndPayerID(expectedTransaction.ID, expectedTransaction.PayerID)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, persisted)
+	assert.Equal(t, expectedTransaction, persisted)
 }
