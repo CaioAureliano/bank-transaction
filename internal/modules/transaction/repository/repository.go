@@ -8,6 +8,7 @@ import (
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain/mapper"
+	"github.com/CaioAureliano/bank-transaction/pkg/model"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -54,7 +55,15 @@ func (r Repository) ExistsByUserIDAndStatus(payerID uint, status []domain.Status
 	return err == nil
 }
 
-func (r Repository) PubMessage(message *domain.PubMessage) error {
+func (r Repository) SendMessage(message *domain.TransactionQueueMessage) error {
 	body, _ := json.Marshal(message)
 	return r.q.SendMessage(string(body))
+}
+
+func (r Repository) GetTransactionByIDAndPayerID(transactionID, payerID uint) (*model.Transaction, error) {
+	transaction := new(model.Transaction)
+	if err := r.db.Where("id = ? AND payer_id = ?", transactionID, payerID).First(&transaction).Error; err != nil {
+		return nil, err
+	}
+	return transaction, nil
 }
