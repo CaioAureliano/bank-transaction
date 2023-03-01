@@ -11,7 +11,7 @@ import (
 )
 
 func DefaultDialector() (gorm.Dialector, *sql.DB) {
-	dsn := fmt.Sprintf("%s:%s@/%s?parseTime=true", configuration.Env.DBUSER, configuration.Env.DBPASSWORD, configuration.Env.DBNAME)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true", configuration.Env.DBUSER, configuration.Env.DBPASSWORD, configuration.Env.DBURI, configuration.Env.DBNAME)
 	conn, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Panic(err)
