@@ -25,9 +25,9 @@ func New(r repository) Service {
 
 func (s Service) Transfer(message *domain.TransactionMessage) error {
 
-	status, msg := s.process(message)
+	status, processMsg := s.process(message)
 
-	log.Println(msg)
+	log.Println(processMsg)
 
 	defer s.r.CacheStatus(status, message.TransactionID)
 
@@ -37,7 +37,7 @@ func (s Service) Transfer(message *domain.TransactionMessage) error {
 		PayeeID: message.Payee,
 		Value:   message.Value,
 		Status:  status,
-		Message: msg,
+		Message: processMsg,
 	}
 
 	return s.r.UpdateTransaction(transaction)
@@ -45,9 +45,7 @@ func (s Service) Transfer(message *domain.TransactionMessage) error {
 
 func (s Service) process(msg *domain.TransactionMessage) (model.Status, string) {
 
-	if err := s.r.CacheStatus(model.PROCESSING, msg.TransactionID); err != nil {
-		return model.FAILED, err.Error()
-	}
+	go s.r.CacheStatus(model.PROCESSING, msg.TransactionID)
 
 	payer, _ := s.r.GetAccountByID(msg.Payer)
 	payee, err := s.r.GetAccountByID(msg.Payee)
