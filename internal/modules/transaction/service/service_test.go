@@ -5,7 +5,6 @@ import (
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain/dto"
-	"github.com/CaioAureliano/bank-transaction/pkg/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,8 +35,8 @@ func (m mockRepository) ExistsByUserIDAndStatus(userID uint, status []domain.Sta
 	return m.fnExistsByUserIDAndStatus(userID, status)
 }
 
-func (m mockRepository) GetTransactionByIDAndPayerID(transactionID, payerID uint) (*model.Transaction, error) {
-	return nil, nil
+func (m mockRepository) GetCachedStatusTransactionByID(transactionID string) *domain.Status {
+	return nil
 }
 
 func TestCreateTransaction(t *testing.T) {

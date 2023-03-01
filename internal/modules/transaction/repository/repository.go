@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain/mapper"
-	"github.com/CaioAureliano/bank-transaction/pkg/model"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -25,6 +25,7 @@ type Queue interface {
 
 type Cache interface {
 	Set(ctx context.Context, k string, v interface{}, expiration time.Duration) *redis.StatusCmd
+	Get(ctx context.Context, key string) *redis.StringCmd
 }
 
 type Repository struct {
@@ -60,10 +61,9 @@ func (r Repository) SendMessage(message *domain.TransactionQueueMessage) error {
 	return r.q.SendMessage(string(body))
 }
 
-func (r Repository) GetTransactionByIDAndPayerID(transactionID, payerID uint) (*model.Transaction, error) {
-	transaction := new(model.Transaction)
-	if err := r.db.Where("id = ? AND payer_id = ?", transactionID, payerID).First(&transaction).Error; err != nil {
-		return nil, err
-	}
-	return transaction, nil
+func (r Repository) GetCachedStatusTransactionByID(transactionID string) *domain.Status {
+	result, _ := r.c.Get(context.Background(), transactionID).Result()
+	value, _ := strconv.Atoi(result)
+	status := domain.Status(value)
+	return &status
 }

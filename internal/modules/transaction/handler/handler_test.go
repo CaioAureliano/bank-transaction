@@ -22,7 +22,7 @@ import (
 
 type mockService struct {
 	fnCreateTransaction func(*dto.TransactionRequestDTO, uint) (uint, error)
-	fnGetTransaction    func(*dto.GetTransactionRequestDTO) (*dto.TransactionResponseDTO, error)
+	fnGetTransaction    func(*dto.GetTransactionRequestDTO) *dto.TransactionResponseDTO
 }
 
 func (m mockService) CreateTransaction(req *dto.TransactionRequestDTO, userID uint) (uint, error) {
@@ -32,9 +32,9 @@ func (m mockService) CreateTransaction(req *dto.TransactionRequestDTO, userID ui
 	return m.fnCreateTransaction(req, userID)
 }
 
-func (m mockService) GetTransaction(req *dto.GetTransactionRequestDTO) (*dto.TransactionResponseDTO, error) {
+func (m mockService) GetTransaction(req *dto.GetTransactionRequestDTO) *dto.TransactionResponseDTO {
 	if m.fnGetTransaction == nil {
-		return nil, nil
+		return nil
 	}
 	return m.fnGetTransaction(req)
 }
@@ -164,29 +164,16 @@ func TestGetTransaction(t *testing.T) {
 
 			transactionIDMock: 2,
 			serviceMock: mockService{
-				fnGetTransaction: func(req *dto.GetTransactionRequestDTO) (*dto.TransactionResponseDTO, error) {
+				fnGetTransaction: func(req *dto.GetTransactionRequestDTO) *dto.TransactionResponseDTO {
 					return &dto.TransactionResponseDTO{
 						Status:  domain.SUCCESS,
 						Message: domain.SUCCESS.String(),
-					}, nil
+					}
 				},
 			},
 
 			expectStatus:   fiber.StatusOK,
 			expectResponse: `{"status":3,"message":"SUCCESS"}`,
-		},
-		{
-			name: "should be return Internal Server Error status with error service return",
-
-			transactionIDMock: 3,
-			serviceMock: mockService{
-				fnGetTransaction: func(req *dto.GetTransactionRequestDTO) (*dto.TransactionResponseDTO, error) {
-					return nil, fmt.Errorf("mock error")
-				},
-			},
-
-			expectStatus:   fiber.StatusInternalServerError,
-			expectResponse: ``,
 		},
 	}
 

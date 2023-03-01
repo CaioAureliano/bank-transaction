@@ -14,7 +14,7 @@ import (
 
 type service interface {
 	CreateTransaction(req *dto.TransactionRequestDTO, userID uint) (uint, error)
-	GetTransaction(*dto.GetTransactionRequestDTO) (*dto.TransactionResponseDTO, error)
+	GetTransaction(*dto.GetTransactionRequestDTO) *dto.TransactionResponseDTO
 }
 
 type Handler struct {
@@ -83,11 +83,7 @@ func (h Handler) GetTransaction(c *fiber.Ctx) error {
 		PayerID:       uint(userID),
 	}
 
-	res, err := h.s.GetTransaction(req)
-	if err != nil {
-		log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).SendString("")
-	}
+	res := h.s.GetTransaction(req)
 
 	return c.JSON(res)
 }
