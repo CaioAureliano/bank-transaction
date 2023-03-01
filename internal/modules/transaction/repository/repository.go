@@ -36,16 +36,15 @@ func New(db Database, b Queue, c Cache) Repository {
 	return Repository{db, b, c}
 }
 
-func (r Repository) CreateTransaction(t *domain.Transaction) (uint, error) {
+func (r Repository) CreateTransaction(transaction *domain.Transaction) (uint, error) {
 
-	entity := mapper.ToEntity(t)
+	entity := mapper.ToEntity(transaction)
 
-	result := r.db.Create(&entity)
-	if result.Error != nil {
-		return 0, result.Error
+	if err := r.db.Create(&entity).Error; err != nil {
+		return 0, err
 	}
 
-	r.c.Set(context.Background(), fmt.Sprint(t.ID), fmt.Sprint(t.Status), time.Minute*1)
+	r.c.Set(context.Background(), fmt.Sprint(transaction.ID), fmt.Sprint(transaction.Status), time.Minute*1)
 
 	return entity.ID, nil
 }
