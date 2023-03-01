@@ -2,11 +2,11 @@ package repository
 
 import (
 	"database/sql"
-	"regexp"
 	"testing"
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/account/domain"
 	"github.com/CaioAureliano/bank-transaction/pkg/database"
+	"github.com/CaioAureliano/bank-transaction/pkg/model"
 	"github.com/CaioAureliano/bank-transaction/pkg/utils/test"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
@@ -51,16 +51,23 @@ func TestGetByEmail(t *testing.T) {
 	r, conn, mock := before()
 	defer conn.Close()
 
-	email := "example@mail.com"
-	rowsMock := sqlmock.NewRows([]string{"email"}).AddRow(email)
+	expectedUser := &model.User{
+		ID:       1,
+		Password: "hash",
+		Account: &model.Account{
+			Type: model.USER,
+		},
+	}
+	columns := []string{"id", "password", "Account__type"}
+	rows := sqlmock.NewRows(columns).AddRow(expectedUser.ID, expectedUser.Password, expectedUser.Account.Type)
 
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT `users`.`id`,`users`.`firstname`,`users`.`lastname`,`users`.`cpf`,`users`.`email`,`users`.`password`,`users`.`created_at`,`Account`.`id` AS `Account__id`,`Account`.`user_id` AS `Account__user_id`,`Account`.`type` AS `Account__type`,`Account`.`balance` AS `Account__balance` FROM `users` LEFT JOIN `accounts` `Account` ON `users`.`id` = `Account`.`user_id` WHERE email = ? ORDER BY `users`.`id` LIMIT 1")).
-		WithArgs(email).
-		WillReturnRows(rowsMock)
+	mock.ExpectQuery("SELECT (.+) FROM (.+) WHERE email = ? (.+) LIMIT 1").
+		WithArgs(expectedUser.Email).
+		WillReturnRows(rows)
 
-	user, err := r.GetByEmail(email)
+	user, err := r.GetByEmail(expectedUser.Email)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, user)
-	assert.Equal(t, email, user.Email)
+	assert.Equal(t, expectedUser, user)
 }
