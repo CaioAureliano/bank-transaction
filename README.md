@@ -1,6 +1,14 @@
 # Bank Transaction
 API Restful que permite usuário se cadastrar e realizar transações bancárias
 
+## Stack
+
+- `Golang`
+- `Fiber`
+- `Mysql`
+- `RabbitMQ`
+- `Redis`
+
 ## User Guide
 <details>
     <summary>Roadmap do usuário</summary>
@@ -28,7 +36,9 @@ API Restful que permite usuário se cadastrar e realizar transações bancárias
 - #### Banco de Dados
     O escopo bem definido e a simplicidade da API não necessitam de um banco de dados robusto, logo o `MySQL` atende bem as necessidades da aplicação.
 
-## Estrutura
+#### Estrutura
+
+A estrutura é influenciada pelo [golang project layout](https://github.com/golang-standards/project-layout)
 
 ```
 ├── cmd
@@ -46,14 +56,36 @@ API Restful que permite usuário se cadastrar e realizar transações bancárias
 ├── pkg
 └── docs
 ```
+
+### Sobre
+
+##### Packages Diagram
+![packages diagram](.github/images/packages-diagram.png)
+> A setinha aponta para qual pacote será injetado ou importado
+
+Os pacote foram pensados e organizados para evitar *imports cycles*, que ocasionam em error no `Go`, e desacoplar resposabilidades. Na qual, são utilizadas *ports* que fornecem uma interface do que é necessário para aquele determinado pacote e a implementação é injetada via injeção de dependências.
+
+##### Class Diagram
+![class table diagram](.github/images/class-table-diagram.jpg)
+
+Exemplo visual da Modelagem de dados(e classes) dentro da aplicação
+
+### Endpoints
+
+| endpoint | method | description |
+| -------- | ------ | --------- | 
+| `/accounts` | POST | Cria conta do usuário | 
+| `/accounts/auth` | POST | Autenticar usuário e gerar JWT | 
+| `/transactions` | POST | Criar transacão | 
+| `/transactions/:id` | GET | Acompanhar transacão | 
     
-## Fluxo
+### Fluxo
 
 - #### `/transaction`
     - Usuário autenticado realiza transação
-    - Endpoint retorna que solicitação foi criada, junto com *status code* apropriado e *hateoas* para acompanhar o processo, através de *web socket*
+    - Endpoint retorna que solicitação foi criada, junto com *status code*`202` e *hateoas* para acompanhar o processo, através de *short polling*(no frontend) ou requisição `GET` no endpoint 
     - Solicitação é enviada para uma fila(`RabbitMQ`) e *status* é persistido no `Redis`
-    - Ao consumir evento da fila, atualiza *status* do processamento(que será consumido pelo *socket* em outro endpoint para acompanhamento).
+    - Ao consumir evento da fila, atualiza *status* do processamento(que pode ser consultado pelo endpoint `/transaction/:id` através de *short polling* para acompanhamento em tempo real).
     - Processa solicitação
         * Verifica se conta de usuário(*payee*) existe
         * Verifica o tipo de conta do usuário(*payer*)
@@ -63,3 +95,38 @@ API Restful que permite usuário se cadastrar e realizar transações bancárias
     - Atualiza *status* do processamento
     - Em caso de erro, realizar *rollback* e atualizar *status*
     - Todas as transações bem sucedida(ou não) são registradas
+
+---
+
+## Setup
+É necessário criar uma cópia de `.env.example`(ou alterar o nome do arquivo atual) para `.env`
+
+``` bash
+mv .env.example .env
+// ou
+cp .env.example .env
+```
+
+Em seguida atualizar os valores das variáveis
+
+#### Run
+Com o *docker compose* instalado execute:
+``` sh
+docker compose up --build -d
+```
+<details>
+    <summary>Acompanhar logs</summary>
+
+    
+    ``` sh
+    docker compose logs api -f
+    ```
+
+</details>
+
+### Tests
+Com o `Go` instalado, execute:
+``` sh
+go test ./...
+```
+> o projeto foi desenvolvido utilizando a versão `1.19`
