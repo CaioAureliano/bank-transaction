@@ -6,7 +6,7 @@ import (
 
 func getenv(key string) string {
 	// Return empty string to all variables to unit tests
-	if v, e := os.LookupEnv("ENV"); !e || v != "" {
+	if v, e := os.LookupEnv("SETUP_ENV"); !e || v != "PROD" {
 		return ""
 	}
 
