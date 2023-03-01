@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func Connection(dialector gorm.Dialector) *gorm.DB {
@@ -26,7 +27,9 @@ func Connection(dialector gorm.Dialector) *gorm.DB {
 }
 
 func connect(dialector gorm.Dialector) (*gorm.DB, error) {
-	db, err := gorm.Open(dialector, &gorm.Config{})
+	db, err := gorm.Open(dialector, &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 	if err != nil {
 		return nil, err
 	}
