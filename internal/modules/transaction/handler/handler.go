@@ -48,8 +48,8 @@ func (h Handler) CreateTransaction(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "invalid payer: user not have permission to do transaction"})
 	}
 
-	if req.Payee == uint(userID) {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "invalid payee: can't do transaction to yourself account"})
+	if req.Payee == uint(userID) || req.Value <= 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "bad request"})
 	}
 
 	id, err := h.s.CreateTransaction(req, uint(userID))
