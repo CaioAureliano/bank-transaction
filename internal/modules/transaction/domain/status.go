@@ -8,3 +8,14 @@ const (
 	SUCCESS
 	FAILED
 )
+
+func (s Status) String() string {
+	values := map[Status]string{
+		REQUESTED:  "REQUEST",
+		PROCESSING: "PROCESSING",
+		SUCCESS:    "SUCCESS",
+		FAILED:     "FAILED",
+	}
+
+	return values[s]
+}

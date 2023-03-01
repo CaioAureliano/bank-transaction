@@ -2,15 +2,19 @@ package service
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain/dto"
+	"github.com/CaioAureliano/bank-transaction/pkg/model"
+	"github.com/CaioAureliano/bank-transaction/pkg/utils"
 )
 
 type repository interface {
-	PubMessage(*domain.PubMessage) error
+	SendMessage(*domain.TransactionQueueMessage) error
 	CreateTransaction(t *domain.Transaction) (uint, error)
 	ExistsByUserIDAndStatus(userID uint, status []domain.Status) bool
+	GetTransactionByIDAndPayerID(transactionID, payerID uint) (*model.Transaction, error)
 }
 
 type Service struct {
@@ -40,16 +44,31 @@ func (s Service) CreateTransaction(req *dto.TransactionRequestDTO, userID uint) 
 		return 0, err
 	}
 
-	message := &domain.PubMessage{
+	message := &domain.TransactionQueueMessage{
 		Payer:         userID,
 		Payee:         req.Payee,
 		Value:         req.Value,
 		TransactionID: transactionID,
 	}
 
-	if err := s.r.PubMessage(message); err != nil {
+	if err := s.r.SendMessage(message); err != nil {
 		return 0, err
 	}
 
 	return transactionID, nil
+}
+
+func (s Service) GetTransaction(req *dto.GetTransactionRequestDTO) (*dto.TransactionResponseDTO, error) {
+	transactionID, _ := strconv.ParseUint(req.TransactionID, 10, 64)
+	transactionPersisted, err := s.r.GetTransactionByIDAndPayerID(uint(transactionID), req.PayerID)
+	if err != nil {
+		return nil, err
+	}
+
+	transaction := utils.ParseTo[domain.Transaction](transactionPersisted)
+
+	return &dto.TransactionResponseDTO{
+		Status:  transaction.Status,
+		Message: transaction.Status.String(),
+	}, nil
 }
