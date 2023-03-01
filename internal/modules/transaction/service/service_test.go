@@ -5,20 +5,21 @@ import (
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain/dto"
+	"github.com/CaioAureliano/bank-transaction/pkg/model"
 	"github.com/stretchr/testify/assert"
 )
 
 type mockRepository struct {
-	fnPubMessage              func(*domain.PubMessage) error
+	fnSendMessage             func(*domain.TransactionQueueMessage) error
 	fnCreateTransaction       func(*domain.Transaction) (uint, error)
 	fnExistsByUserIDAndStatus func(userID uint, status []domain.Status) bool
 }
 
-func (m mockRepository) PubMessage(message *domain.PubMessage) error {
-	if m.fnPubMessage == nil {
+func (m mockRepository) SendMessage(message *domain.TransactionQueueMessage) error {
+	if m.fnSendMessage == nil {
 		return nil
 	}
-	return m.fnPubMessage(message)
+	return m.fnSendMessage(message)
 }
 
 func (m mockRepository) CreateTransaction(t *domain.Transaction) (uint, error) {
@@ -33,6 +34,10 @@ func (m mockRepository) ExistsByUserIDAndStatus(userID uint, status []domain.Sta
 		return false
 	}
 	return m.fnExistsByUserIDAndStatus(userID, status)
+}
+
+func (m mockRepository) GetTransactionByIDAndPayerID(transactionID, payerID uint) (*model.Transaction, error) {
+	return nil, nil
 }
 
 func TestCreateTransaction(t *testing.T) {
