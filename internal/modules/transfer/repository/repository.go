@@ -5,10 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transfer/domain"
+	"github.com/CaioAureliano/bank-transaction/internal/modules/transfer/domain/dto"
+	"github.com/CaioAureliano/bank-transaction/pkg/configuration"
 	"github.com/CaioAureliano/bank-transaction/pkg/model"
+	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -16,10 +20,10 @@ import (
 type Database interface {
 	First(dest interface{}, conds ...interface{}) *gorm.DB
 	Joins(query string, args ...interface{}) *gorm.DB
-	Transaction(fc func(tx *gorm.DB) error, opts ...*sql.TxOptions) (err error)
-	Save(value interface{}) (tx *gorm.DB)
-	Updates(values interface{}) (tx *gorm.DB)
-	Model(value interface{}) (tx *gorm.DB)
+	Transaction(fc func(tx *gorm.DB) error, opts ...*sql.TxOptions) error
+	Save(value interface{}) *gorm.DB
+	Updates(values interface{}) *gorm.DB
+	Model(value interface{}) *gorm.DB
 }
 
 type Cache interface {
@@ -34,6 +38,10 @@ type Repository struct {
 func New(db Database, c Cache) Repository {
 	return Repository{db, c}
 }
+
+var (
+	ErrFailedAuthenticator = errors.New("failed to on authenticator")
+)
 
 func (r Repository) GetAccountByID(userID uint) (*model.Account, error) {
 	user := new(model.User)
@@ -67,5 +75,22 @@ func (r Repository) UpdateTransaction(transaction *model.Transaction) error {
 }
 
 func (r Repository) Authenticator() error {
+
+	c := fiber.AcquireClient()
+
+	agent := c.Get(configuration.Env.AUTHENTICATORSERVICEURL)
+	if err := agent.Parse(); err != nil {
+		log.Println(err)
+		return ErrFailedAuthenticator
+	}
+
+	res := new(dto.AuthenticatorResponseDTO)
+
+	code, _, errs := agent.Struct(&res)
+	if !res.Authorization || code != 200 || len(errs) > 0 {
+		log.Printf("errors: %v", errs)
+		return ErrFailedAuthenticator
+	}
+
 	return nil
 }
