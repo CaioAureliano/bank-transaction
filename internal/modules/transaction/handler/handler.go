@@ -14,6 +14,7 @@ import (
 
 type service interface {
 	CreateTransaction(req *dto.TransactionRequestDTO, userID uint) (uint, error)
+	GetTransaction(*dto.GetTransactionRequestDTO) (*dto.TransactionResponseDTO, error)
 }
 
 type Handler struct {
@@ -28,6 +29,7 @@ func (h Handler) CreateTransaction(c *fiber.Ctx) error {
 
 	userToken := c.Locals("user").(*jwt.Token)
 	claims := userToken.Claims.(jwt.MapClaims)
+
 	typeAccount := claims["type"].(float64)
 	userID := claims["ID"].(float64)
 
@@ -65,4 +67,27 @@ func (h Handler) CreateTransaction(c *fiber.Ctx) error {
 			"type": "GET",
 		},
 	})
+}
+
+func (h Handler) GetTransaction(c *fiber.Ctx) error {
+
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+
+	userID := claims["ID"].(float64)
+
+	transactionID := c.Params("id")
+
+	req := &dto.GetTransactionRequestDTO{
+		TransactionID: transactionID,
+		PayerID:       uint(userID),
+	}
+
+	res, err := h.s.GetTransaction(req)
+	if err != nil {
+		log.Println(err)
+		return c.Status(fiber.StatusInternalServerError).SendString("")
+	}
+
+	return c.JSON(res)
 }
