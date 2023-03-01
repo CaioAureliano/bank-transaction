@@ -17,14 +17,11 @@ type User struct {
 	CreatedAt time.Time
 }
 
-func (u *User) GeneratePassword() {
+func (u *User) GenerateHash() {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	u.Password = string(hash)
 }
 
 func (u *User) ValidatePassword(p string) error {
-	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(p)); err != nil {
-		return err
-	}
-	return nil
+	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(p))
 }
