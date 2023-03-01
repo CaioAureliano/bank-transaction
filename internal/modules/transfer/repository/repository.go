@@ -45,8 +45,8 @@ var (
 
 func (r Repository) GetAccountByID(userID uint) (*model.Account, error) {
 	user := new(model.User)
-	if result := r.db.Joins("Account").First(&user, model.User{ID: userID}); result.Error != nil || user == nil {
-		return nil, errors.New(fmt.Sprintf("not found user by userID(%d): %s", userID, result.Error.Error()))
+	if err := r.db.Joins("Account").First(&user, model.User{ID: userID}).Error; err != nil || user == nil {
+		return nil, errors.New(fmt.Sprintf("not found user with id \"%d\": %s", userID, err.Error()))
 	}
 	return user.Account, nil
 }
