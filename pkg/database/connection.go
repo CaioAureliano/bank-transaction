@@ -13,7 +13,7 @@ func Connection(dialector gorm.Dialector) *gorm.DB {
 			return db
 		}
 
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second * 15)
 	}
 
 	panic("failed to initialize database")
