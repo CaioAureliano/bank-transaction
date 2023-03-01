@@ -30,14 +30,14 @@ func (r Repository) Create(u *domain.User) error {
 
 func (r Repository) GetByEmail(email string) (*model.User, error) {
 	user := new(model.User)
-	if result := r.db.Joins("Account").First(&user, "email = ?", email); result.Error != nil || user == nil {
-		return nil, errors.New(fmt.Sprintf("not found user by email[%s]: %s", email, result.Error.Error()))
+	if err := r.db.Joins("Account").First(&user, "email = ?", email).Error; err != nil || user == nil {
+		return nil, errors.New(fmt.Sprintf("not found user with email \"%s\": %s", email, err.Error()))
 	}
 	return user, nil
 }
 
 func (r Repository) ExistsByCpfOrEmail(cpf, email string) bool {
 	user := new(model.User)
-	result := r.db.First(&user, "cpf = ? OR email = ?", cpf, email)
-	return result.Error == nil && user != nil
+	err := r.db.First(&user, "cpf = ? OR email = ?", cpf, email).Error
+	return err == nil && user != nil
 }
