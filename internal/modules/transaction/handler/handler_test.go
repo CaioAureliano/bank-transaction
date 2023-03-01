@@ -2,13 +2,18 @@ package handler
 
 import (
 	"bytes"
+	"fmt"
+	"io"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain"
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain/dto"
 	"github.com/CaioAureliano/bank-transaction/pkg/api"
 	"github.com/CaioAureliano/bank-transaction/pkg/authentication"
+	"github.com/CaioAureliano/bank-transaction/pkg/configuration"
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/golang-jwt/jwt/v4"
@@ -17,6 +22,7 @@ import (
 
 type mockService struct {
 	fnCreateTransaction func(*dto.TransactionRequestDTO, uint) (uint, error)
+	fnGetTransaction    func(*dto.GetTransactionRequestDTO) (*dto.TransactionResponseDTO, error)
 }
 
 func (m mockService) CreateTransaction(req *dto.TransactionRequestDTO, userID uint) (uint, error) {
@@ -26,7 +32,29 @@ func (m mockService) CreateTransaction(req *dto.TransactionRequestDTO, userID ui
 	return m.fnCreateTransaction(req, userID)
 }
 
+func (m mockService) GetTransaction(req *dto.GetTransactionRequestDTO) (*dto.TransactionResponseDTO, error) {
+	if m.fnGetTransaction == nil {
+		return nil, nil
+	}
+	return m.fnGetTransaction(req)
+}
+
+var getRequest = func(method, endpoint, token, body string) *http.Request {
+	req := httptest.NewRequest(method, endpoint, bytes.NewBuffer([]byte(body)))
+	req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+	req.Header.Set(fiber.HeaderAuthorization, "Bearer "+token)
+	return req
+}
+
+var jwtMiddleware = func() fiber.Handler {
+	return jwtware.New(jwtware.Config{
+		SigningKey:    []byte(configuration.Env.JWTSECRET),
+		SigningMethod: jwt.SigningMethodHS256.Name,
+	})
+}
+
 func TestCreateTransaction(t *testing.T) {
+	t.Parallel()
 
 	tests := []struct {
 		name string
@@ -105,21 +133,78 @@ func TestCreateTransaction(t *testing.T) {
 
 			h := New(tt.serviceMock)
 			app := api.Setup()
-			app.Use(jwtware.New(jwtware.Config{
-				SigningKey:    []byte(authentication.JWT_SECRET),
-				SigningMethod: jwt.SigningMethodHS256.Name,
-			}))
+			app.Use(jwtMiddleware())
 
 			Router(app, h)
 
-			req := httptest.NewRequest(fiber.MethodPost, transactionEndpoint, bytes.NewBuffer([]byte(tt.body)))
-			req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
-			req.Header.Set(fiber.HeaderAuthorization, "Bearer "+tt.jwtMock)
+			req := getRequest(fiber.MethodPost, transactionEndpoint, tt.jwtMock, tt.body)
 
 			res, err := app.Test(req, -1)
 
 			tt.expectError(t, err)
 			assert.Equal(t, tt.expectStatusCode, res.StatusCode)
+		})
+	}
+}
+
+func TestGetTransaction(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+
+		transactionIDMock int
+		serviceMock       service
+
+		expectStatus   int
+		expectResponse string
+	}{
+		{
+			name: "should be return Ok status with valid request and service return",
+
+			transactionIDMock: 2,
+			serviceMock: mockService{
+				fnGetTransaction: func(req *dto.GetTransactionRequestDTO) (*dto.TransactionResponseDTO, error) {
+					return &dto.TransactionResponseDTO{
+						Status:  domain.SUCCESS,
+						Message: domain.SUCCESS.String(),
+					}, nil
+				},
+			},
+
+			expectStatus:   fiber.StatusOK,
+			expectResponse: `{"status":3,"message":"SUCCESS"}`,
+		},
+		{
+			name: "should be return Internal Server Error status with error service return",
+
+			transactionIDMock: 3,
+			serviceMock: mockService{
+				fnGetTransaction: func(req *dto.GetTransactionRequestDTO) (*dto.TransactionResponseDTO, error) {
+					return nil, fmt.Errorf("mock error")
+				},
+			},
+
+			expectStatus:   fiber.StatusInternalServerError,
+			expectResponse: ``,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := api.Setup()
+			app.Use(jwtMiddleware())
+
+			h := New(tt.serviceMock)
+			Router(app, h)
+
+			jwtMock, _ := authentication.GenerateJwt(1, 1, time.Now().Add(time.Minute*10))
+			req := getRequest(fiber.MethodGet, fmt.Sprintf("%s/%d", transactionEndpoint, tt.transactionIDMock), jwtMock, "")
+
+			res, _ := app.Test(req, -1)
+			body, _ := io.ReadAll(res.Body)
+
+			assert.Equal(t, tt.expectResponse, string(body))
 		})
 	}
 }
