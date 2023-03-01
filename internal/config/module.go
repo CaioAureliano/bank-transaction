@@ -25,5 +25,5 @@ func Start() {
 	app.Use(authentication.JwtMiddleware())
 	transaction.Setup(v1, db, redis)
 
-	app.Listen(configuration.Env.PORT)
+	app.Listen(":" + configuration.Env.PORT)
 }
