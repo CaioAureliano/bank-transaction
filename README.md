@@ -124,6 +124,13 @@ docker compose up --build -d
 
 </details>
 
+<details>
+    <summary>Swagger</summary>
+
+    Swagger pode ser acessado pelo path `/v1/swagger/index.html`
+
+</details>
+
 ### Tests
 Com o `Go` instalado, execute:
 ``` sh

@@ -1,0 +1,241 @@
+basePath: /v1/
+definitions:
+  domain.Status:
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    type: integer
+    x-enum-varnames:
+    - REQUESTED
+    - PROCESSING
+    - SUCCESS
+    - FAILED
+  dto.AuthRequestDTO:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.CreateRequestDTO:
+    properties:
+      cpf:
+        type: string
+      email:
+        type: string
+      firstname:
+        minLength: 3
+        type: string
+      lastname:
+        minLength: 3
+        type: string
+      password:
+        minLength: 8
+        type: string
+      type:
+        type: integer
+    required:
+    - cpf
+    - email
+    - firstname
+    - lastname
+    - password
+    - type
+    type: object
+  dto.CreatedTransactionResponseDTO:
+    properties:
+      links:
+        $ref: '#/definitions/dto.LinksHateoas'
+      message:
+        type: string
+    type: object
+  dto.JwtResponseDTO:
+    properties:
+      token:
+        type: string
+    type: object
+  dto.LinksHateoas:
+    properties:
+      href:
+        type: string
+      rel:
+        type: string
+      type:
+        type: string
+    type: object
+  dto.TransactionRequestDTO:
+    properties:
+      payee:
+        type: integer
+      value:
+        type: number
+    required:
+    - payee
+    - value
+    type: object
+  dto.TransactionResponseDTO:
+    properties:
+      message:
+        type: string
+      status:
+        $ref: '#/definitions/domain.Status'
+    type: object
+  errors.HttpErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: A simple Restful API to Bank Transaction
+  title: Bank Transaction
+  version: "1.0"
+paths:
+  /accounts:
+    post:
+      consumes:
+      - application/json
+      description: receive payload with user data and if valid create user account
+      parameters:
+      - description: user data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HttpErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errors.HttpErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HttpErrorResponse'
+      summary: Create User Account
+      tags:
+      - accounts
+  /accounts/auth:
+    post:
+      consumes:
+      - application/json
+      description: Receive email with password and if is valid than return JWT
+      parameters:
+      - description: authentication payload
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuthRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.JwtResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HttpErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HttpErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errors.HttpErrorResponse'
+      summary: Authenticate User
+      tags:
+      - accounts
+  /transactions:
+    post:
+      consumes:
+      - application/json
+      description: receive payload to do transfer if is valid send message to queue
+      parameters:
+      - description: transaction data
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TransactionRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/dto.CreatedTransactionResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HttpErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HttpErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errors.HttpErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HttpErrorResponse'
+      security:
+      - JwtToken: []
+      summary: Create Transaction
+      tags:
+      - transactions
+  /transactions/:id:
+    get:
+      consumes:
+      - application/json
+      description: get cached transaction status to short polling(without error return,
+        just empty string or status)
+      parameters:
+      - description: transaction id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TransactionResponseDTO'
+      security:
+      - JwtToken: []
+      summary: Get Transaction
+      tags:
+      - transactions
+securityDefinitions:
+  JwtToken:
+    description: 'use with "Bearer " prefix. e.g: "Authorization: Bearer {token}"'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -10,6 +10,7 @@ import (
 	"github.com/CaioAureliano/bank-transaction/pkg/cache"
 	"github.com/CaioAureliano/bank-transaction/pkg/configuration"
 	"github.com/CaioAureliano/bank-transaction/pkg/database"
+	swagger "github.com/arsmn/fiber-swagger/v2"
 )
 
 func Start() {
@@ -19,6 +20,8 @@ func Start() {
 	dialector, _ := database.DefaultDialector()
 	db := database.Connection(dialector)
 	redis := cache.Connection()
+
+	v1.Get("/swagger/*", swagger.HandlerDefault)
 
 	go transfer.Setup(db, redis)
 	account.Setup(v1, db)

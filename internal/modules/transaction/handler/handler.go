@@ -7,6 +7,7 @@ import (
 
 	"github.com/CaioAureliano/bank-transaction/internal/modules/transaction/domain/dto"
 	"github.com/CaioAureliano/bank-transaction/pkg/api"
+	"github.com/CaioAureliano/bank-transaction/pkg/errors"
 	"github.com/CaioAureliano/bank-transaction/pkg/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
@@ -25,6 +26,19 @@ func New(s service) Handler {
 	return Handler{s}
 }
 
+// @Summary 	Create Transaction
+// @Description receive payload to do transfer if is valid send message to queue
+// @Accept  	json
+// @Produce  	json
+// @Tags 		transactions
+// @Param		transaction body	  dto.TransactionRequestDTO			true	"transaction data"
+// @Success 	202			{object}  dto.CreatedTransactionResponseDTO
+// @Failure 	400 		{object}  errors.HttpErrorResponse
+// @Failure 	401 		{object}  errors.HttpErrorResponse
+// @Failure 	422 		{object}  errors.HttpErrorResponse
+// @Failure 	500 		{object}  errors.HttpErrorResponse
+// @Security 	JwtToken
+// @Router 		/transactions  [post]
 func (h Handler) CreateTransaction(c *fiber.Ctx) error {
 
 	userToken := c.Locals("user").(*jwt.Token)
@@ -36,39 +50,49 @@ func (h Handler) CreateTransaction(c *fiber.Ctx) error {
 	req := new(dto.TransactionRequestDTO)
 
 	if err := c.BodyParser(&req); err != nil {
-		log.Printf("error to try parse request body - %s", err)
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"message": err.Error()})
+		log.Println(err)
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(errors.NewHttpError("failed to parse request body", fiber.StatusUnprocessableEntity, err.Error()))
 	}
 
-	if errors := api.ValidateRequest(*req); errors != nil {
-		errorsJson, _ := json.Marshal(errors)
-		log.Printf("errors to try validate request body - %s", errorsJson)
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+	if err := api.ValidateRequest(*req); err != nil {
+		errorsJson, _ := json.Marshal(err)
+		log.Println(string(errorsJson))
+		return c.Status(fiber.StatusBadRequest).JSON(errors.NewHttpError("failed to validate request", fiber.StatusBadRequest, string(errorsJson)))
 	}
 
 	if model.Type(typeAccount) != model.USER {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "invalid payer: user not have permission to do transaction"})
+		return c.Status(fiber.StatusUnauthorized).JSON(errors.NewHttpError("invalid payer", fiber.StatusUnauthorized, "user not have permission to do transaction"))
 	}
 
 	if req.Payee == uint(userID) || req.Value <= 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "bad request"})
+		return c.Status(fiber.StatusBadRequest).JSON(errors.NewHttpError("bad request", fiber.StatusBadRequest, "nice try"))
 	}
 
 	id, err := h.s.CreateTransaction(req, uint(userID))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+		log.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(errors.NewHttpError("failed to create transaction", fiber.StatusInternalServerError, err.Error()))
 	}
 
-	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
-		"message": "Transaction Requested",
-		"links": fiber.Map{
-			"href": fmt.Sprintf("/trasactions/%d", id),
-			"rel":  "transactions",
-			"type": "GET",
+	return c.Status(fiber.StatusAccepted).JSON(dto.CreatedTransactionResponseDTO{
+		Message: "transaction request",
+		Links: dto.LinksHateoas{
+			Href: fmt.Sprintf("/trasactions/%d", id),
+			Rel:  "transactions",
+			Type: "GET",
 		},
 	})
 }
 
+// @Summary 	Get Transaction
+// @Description get cached transaction status to short polling(without error return, just empty string or status)
+// @Accept  	json
+// @Produce  	json
+// @Tags		transactions
+// @Param		id  path	  int				 		 	true	"transaction id"
+// @Success 	200 {object}  dto.TransactionResponseDTO
+// @Security 	JwtToken
+// @Router 		/transactions/:id  [get]
 func (h Handler) GetTransaction(c *fiber.Ctx) error {
 
 	userToken := c.Locals("user").(*jwt.Token)
