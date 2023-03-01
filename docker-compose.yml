@@ -33,6 +33,7 @@ services:
     build: .
     environment:
       - PORT=${PORT}
+      - ENV=PROD
       - JWT_SECRET=${JWT_SECRET}
       - DB_URI=db
       - DB_NAME=${DB_NAME}
