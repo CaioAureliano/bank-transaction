@@ -2,7 +2,6 @@ package domain
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/CaioAureliano/bank-transaction/pkg/model"
 )
@@ -21,9 +20,18 @@ func NewTransference(payer, payee *model.Account, value float64) *Transference {
 	}
 }
 
+var (
+	ErrInvalidUserType = errors.New("invalid user account type")
+	ErrWithouBalance   = errors.New("payer insufficient balance")
+)
+
 func (t *Transference) Transfer() error {
-	if t.Payer.Balance < t.Value {
-		return errors.New(fmt.Sprintf("payer(user account with ID: %d) insufficient balance", t.Payer.ID))
+	if t.Payer.Type != model.USER {
+		return ErrInvalidUserType
+	}
+
+	if t.Payer.Balance == 0 || t.Payer.Balance < t.Value {
+		return ErrWithouBalance
 	}
 
 	t.Payer.Balance -= t.Value
