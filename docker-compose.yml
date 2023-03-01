@@ -28,4 +28,24 @@ services:
     restart: always
     ports:
       - 6379:6379
+
+  api:
+    build: .
+    environment:
+      - PORT=${PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - DB_URI=db
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - RABBITMQ_URI=amqp://guest:guest@queue
+      - RABBITMQ_QUEUE_NAME=${RABBITMQ_QUEUE_NAME}
+      - REDIS_URI=cache:6379
+      - AUTHENTICATOR_SERVICE_URL=${AUTHENTICATOR_SERVICE_URL}
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - db
+      - queue
+      - cache
       
