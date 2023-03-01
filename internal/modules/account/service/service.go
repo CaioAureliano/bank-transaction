@@ -26,7 +26,7 @@ func (s Service) CreateUserAccount(req dto.CreateRequestDTO) error {
 		return err
 	}
 
-	user.GeneratePassword()
+	user.GenerateHash()
 
 	user.Account.Balance = 100 // bonus
 	if err := s.r.Create(user); err != nil {
