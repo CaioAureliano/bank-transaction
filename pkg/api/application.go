@@ -9,7 +9,6 @@ import (
 func Setup() *fiber.App {
 	app := fiber.New()
 	app.Use(cors.New())
-	app.Use(recover())
 	app.Use(idempotency.New())
 	return app
 }
