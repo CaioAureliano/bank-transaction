@@ -4,6 +4,7 @@ import "github.com/gofiber/fiber/v2"
 
 type handlers interface {
 	CreateTransaction(c *fiber.Ctx) error
+	GetTransaction(c *fiber.Ctx) error
 }
 
 const (
@@ -12,4 +13,5 @@ const (
 
 func Router(group fiber.Router, h handlers) {
 	group.Post(transactionEndpoint, h.CreateTransaction)
+	group.Get(transactionEndpoint+"/:id", h.GetTransaction)
 }
