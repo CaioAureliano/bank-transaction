@@ -5,9 +5,11 @@ API Restful que permite usuário se cadastrar e realizar transações bancárias
 
 - `Golang`
 - `Fiber`
+- `Gorm`
 - `Mysql`
 - `RabbitMQ`
 - `Redis`
+- `Swagger`
 
 ## User Guide
 <details>
@@ -44,6 +46,7 @@ A estrutura é influenciada pelo [golang project layout](https://github.com/gola
 ├── cmd
 ├── internal
 │   ├── config
+│   │   ├── migration
 │   │   ├── router
 │   └── modules
 │       ├── transaction
@@ -129,7 +132,7 @@ docker compose logs api -f
     </blockquote>
 </details>
 
-### Tests
+#### Tests
 Com o `Go` instalado, execute:
 ``` sh
 go test ./...
