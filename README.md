@@ -12,10 +12,10 @@ API Restful que permite usuário se cadastrar e realizar transações bancárias
 ## User Guide
 <details>
     <summary>Roadmap do usuário</summary>
-
-    - Usuário pode se cadastrar
-    - Usuário pode efetuar login
-    - Usuário logado pode efetuar transação
+    <br>
+    - Usuário pode se cadastrar <br>
+    - Usuário pode efetuar login <br>
+    - Usuário logado pode efetuar transação 
 </details>
 
 ## Arquitetura & Decisões
@@ -64,6 +64,8 @@ A estrutura é influenciada pelo [golang project layout](https://github.com/gola
 > A setinha aponta para qual pacote será injetado ou importado
 
 Os pacote foram pensados e organizados para evitar *imports cycles*, que ocasionam em error no `Go`, e desacoplar resposabilidades. Na qual, são utilizadas *ports* que fornecem uma interface do que é necessário para aquele determinado pacote e a implementação é injetada via injeção de dependências.
+
+> Com devida configuração, o módulo **transfer** pode ser desacoplado do projeto permitindo a escalibidade horizontal(assim consumindo mais eventos da fila).
 
 ##### Class Diagram
 ![class table diagram](.github/images/class-table-diagram.jpg)
@@ -114,21 +116,17 @@ Com o *docker compose* instalado execute:
 ``` sh
 docker compose up --build -d
 ```
-<details>
-    <summary>Acompanhar logs</summary>
 
-    
-    ``` sh
-    docker compose logs api -f
-    ```
-
-</details>
+#### Acompanhar Logs
+``` sh
+docker compose logs api -f
+```
 
 <details>
     <summary>Swagger</summary>
-
-    Swagger pode ser acessado pelo path `/v1/swagger/index.html`
-
+    <blockquote>
+        Swagger pode ser acessado pelo path: /v1/swagger/index.html
+    </blockquote>
 </details>
 
 ### Tests
